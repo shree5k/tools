@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
   const SHEET_NAME = 'Sheet1';
-  const apiId = 'AKfycbw5IIoGYCrQh1vCGxokHl5Uiy2sE-dW7ITA0KmBu2DGB78hKM64pQpH__9GkcJdgoLe';
 
   const recipeDisplay = document.getElementById('recipe-display');
   // NEW: Content area for scrolling
@@ -20,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const timeKeypad = document.getElementById('time-keypad');
   const shuffleButton = document.getElementById('shuffle-button'); 
   const actionKeypad = document.getElementById('action-keypad');
-  const API_BASE_URL = `https://script.google.com/macros/s/${apiId}/exec`;
+  const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbw5IIoGYCrQh1vCGxokHl5Uiy2sE-dW7ITA0KmBu2DGB78hKM64pQpH__9GkcJdgoLe/exec';
 
   // ... (rest of variable declarations) ...
 
@@ -81,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
       path: SHEET_NAME,
       ...params,
     });
-    return `?${searchParams.toString()}`;
+    return `${API_BASE_URL}?${searchParams.toString()}`;
   }
 
   function setStatus(element, message, isError = false) {
@@ -151,7 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
   
   function renderRecipeDisplayMessage(message) {
       if (!recipeContent) return;
-      recipeContent.innerHTML = `<p></p>`;
+      recipeContent.innerHTML = `<p>${message}</p>`;
       currentRecipe = null;
       updateHeaderButtonsState();
   }
@@ -176,7 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const value = recipe ? recipe.value + idDisplay : 'No recipe available';
         
         // Using simple P and STRONG for hierarchy
-        return `<p><strong>:</strong> </p>`;
+        return `<p><strong>${time}:</strong> ${value}</p>`;
     };
 
     const content = `
@@ -197,7 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const list = recipesData?.[timeKey];
     if (!list || list.length === 0) {
-        renderRecipeDisplayMessage(`No recipes available for .`);
+        renderRecipeDisplayMessage(`No recipes available for ${timeKey}.`);
         return;
     }
     
@@ -206,15 +205,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const items = list.map(recipe => {
         // Embed ID and column for double-click to work
         const dataAttributes = recipe.id 
-            ? `data-id="${recipe.id}" data-column="" data-label=""`
+            ? `data-id="${recipe.id}" data-column="${column}" data-label="${timeKey}"`
             : '';
-        return `<li  style="cursor: pointer;" title="Double-tap to edit">${recipe.value}</li>`;
+        return `<li ${dataAttributes} style="cursor: pointer;" title="Double-tap to edit">${recipe.value}</li>`;
     }).join('');
 
     const content = `
         <div class="all-recipes">
-            <div class="all-recipes-title"> recipes</div>
-            <ol class="all-recipes-list"></ol>
+            <div class="all-recipes-title">${timeKey} recipes</div>
+            <ol class="all-recipes-list">${items}</ol>
         </div>
     `;
 
@@ -524,7 +523,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       try {
         await submitAddRecipe({ [column]: value });
-        setStatus(addStatus, `Recipe added to .`);
+        setStatus(addStatus, `Recipe added to ${column}.`);
         addRecipeForm.reset();
         syncAddChipsWithCurrentTime(column);
         closeAddSheet();
