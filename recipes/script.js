@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const timeKeypad = document.getElementById('time-keypad');
   const shuffleButton = document.getElementById('shuffle-button'); 
   const actionKeypad = document.getElementById('action-keypad');
-  const API_BASE_URL = 'https://script.google.com/macros/s/' + apiId + '/exec';
+  const API_BASE_URL = `https://script.google.com/macros/s/${apiId}/exec`;
 
   // ... (rest of variable declarations) ...
 
