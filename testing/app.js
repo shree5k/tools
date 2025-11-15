@@ -2,7 +2,7 @@
 document.getElementById('api-id').textContent = `API_ID: ${API_ID}`;
 
 // Example API call - replace with your API endpoint
-fetch(`https://example.com/api/data?api_id=${API_ID}`)
+fetch(`https://script.google.com/macros/s/${API_ID}`)
   .then(response => response.json())
   .then(data => {
     document.getElementById('api-result').textContent = JSON.stringify(data, null, 2);
