@@ -16,6 +16,6 @@ jobs:
         run: |
           echo "const API_ID = '${{ secrets.API_ID }}';" > tools/testing/api.js
 
-      - name: Deploy or publish site (example: GitHub Pages)
-        # Replace this with your static hosting deployment step
+      # Example deployment step (replace with your needs)
+      - name: Deploy or publish site
         run: echo "Deploy step here"
