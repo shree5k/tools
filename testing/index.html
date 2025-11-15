@@ -2,19 +2,27 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Testing API</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Testing</title>
 </head>
 <body>
-    <h1>API Test</h1>
-    <div id="result"></div>
+    <h1>Secret API Test</h1>
+    <div id="result">Loading...</div>
     <script>
-        const apiId = '{{API_ID}}';  // Placeholder for injection
-        fetch(`https://api.example.com/data?key=${apiId}`)
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('result').innerHTML = JSON.stringify(data);
-            })
-            .catch(error => console.error('Error:', error));
+        const apiId = '{{API_ID}}';  // This will be replaced by the workflow
+        if (!apiId || apiId === '{{API_ID}}') {
+            document.getElementById('result').innerHTML = '<p>Error: API ID not injected. Run the workflow!</p>';
+        } else {
+            fetch(`https://api.example.com/data?key=${apiId}`)  // Replace with your actual API endpoint
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('result').innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                })
+                .catch(error => {
+                    document.getElementById('result').innerHTML = `<p>Error: ${error.message}</p>`;
+                    console.error('API Error:', error);
+                });
+        }
     </script>
 </body>
 </html>

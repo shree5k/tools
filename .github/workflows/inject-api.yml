@@ -14,9 +14,10 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Replace placeholder with secret
+      env:
+        API_ID: ${{ secrets.API_ID }}
       run: |
-        # Read the HTML file
-        sed -i "s/{{API_ID}}/${{ secrets.API_ID }}/g" tools/testing/index.html
+        sed -i "s|{{API_ID}}|$API_ID|g" tools/testing/index.html
         # Verify the change (optional: echo the first few lines)
         head -n 20 tools/testing/index.html
 
@@ -27,8 +28,3 @@ jobs:
         file_pattern: tools/testing/index.html
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    - name: Deploy to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./tools/testing  # Or your build output dir
