@@ -34,7 +34,8 @@ jobs:
           echo "Error: File testing/index.html does not exist!"
           exit 1
         fi
-        sed -i "s|{{API_ID}}|$API_ID|g" testing/index.html
+        # Escape * for literal match in sed regex
+        sed -i "s|\*\*\*|$API_ID|g" testing/index.html
         # Verify the change
         echo "Updated file preview:"
         head -n 20 testing/index.html
