@@ -9,8 +9,8 @@
     <h1>Secret API Test</h1>
     <div id="result">Loading...</div>
     <script>
-        const apiId = '{{API_ID}}';  // This will be replaced by the workflow
-        if (!apiId || apiId === '{{API_ID}}') {
+        const apiId = 'AKfycbw5IIoGYCrQh1vCGxokHl5Uiy2sE-dW7ITA0KmBu2DGB78hKM64pQpH__9GkcJdgoLe/exec';  // This will be replaced by the workflow
+        if (!apiId || apiId === 'AKfycbw5IIoGYCrQh1vCGxokHl5Uiy2sE-dW7ITA0KmBu2DGB78hKM64pQpH__9GkcJdgoLe/exec') {
             document.getElementById('result').innerHTML = '<p>Error: API ID not injected. Run the workflow!</p>';
         } else {
             fetch(`https://api.example.com/data?key=${apiId}`)  // Replace with your actual API endpoint
