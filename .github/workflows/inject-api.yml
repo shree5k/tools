@@ -20,25 +20,25 @@ jobs:
         echo "Current directory structure:"
         find . -type f | head -20  # Lists top 20 files/folders for debugging
         echo "Checking for target file:"
-        ls -la tools/testing/ || echo "Directory tools/testing/ not found!"
+        ls -la testing/ || echo "Directory testing/ not found!"
 
     - name: Replace placeholder with secret
       env:
         API_ID: ${{ secrets.API_ID }}
       run: |
-        if [ ! -f "tools/testing/index.html" ]; then
-          echo "Error: File tools/testing/index.html does not exist!"
+        if [ ! -f "testing/index.html" ]; then
+          echo "Error: File testing/index.html does not exist!"
           exit 1
         fi
-        sed -i "s|{{API_ID}}|$API_ID|g" tools/testing/index.html
+        sed -i "s|{{API_ID}}|$API_ID|g" testing/index.html
         # Verify the change
         echo "Updated file preview:"
-        head -n 20 tools/testing/index.html
+        head -n 20 testing/index.html
 
     - name: Commit and push updated file
       uses: stefanzweifel/git-auto-commit-action@v5
       with:
         commit_message: "Inject API ID into index.html"
-        file_pattern: tools/testing/index.html
+        file_pattern: testing/index.html
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
