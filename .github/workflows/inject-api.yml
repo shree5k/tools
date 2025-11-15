@@ -1,4 +1,4 @@
-name: Inject API Secret into HTML
+name: Inject API Variable into HTML
 
 on:
   push:
@@ -26,24 +26,32 @@ jobs:
         echo "Checking for target file:"
         ls -la testing/ || echo "Directory testing/ not found!"
 
-    - name: Replace placeholder with secret
+    - name: Replace placeholder with variable
       env:
-        API_ID: ${{ secrets.API_ID }}
+        API_ID: ${{ vars.API_ID }}  # Reference variable here (not secrets)
       run: |
         if [ ! -f "testing/index.html" ]; then
           echo "Error: File testing/index.html does not exist!"
           exit 1
         fi
-        # Escape * for literal match in sed regex
-        sed -i "s|\*\*\*|$API_ID|g" testing/index.html
+        # Use envsubst for safe variable substitution (handles special chars)
+        export API_ID
+        envsubst < testing/index.html > testing/index.html.tmp
+        mv testing/index.html.tmp testing/index.html
         # Verify the change
         echo "Updated file preview:"
         head -n 20 testing/index.html
+        # Debug: Check if placeholder was replaced
+        if grep -q '\${API_ID}' testing/index.html; then
+          echo "Warning: Placeholder still present!"
+        else
+          echo "Success: Variable injected (length: ${#API_ID})."
+        fi
 
     - name: Commit and push updated file
       uses: stefanzweifel/git-auto-commit-action@v5
       with:
-        commit_message: "Inject API ID into index.html"
+        commit_message: "Inject API ID variable into index.html"
         file_pattern: testing/index.html
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
