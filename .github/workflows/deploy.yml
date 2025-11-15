@@ -25,17 +25,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # --- Secret Injection Step ---
+      # --- Secret Injection Step (Path Correction) ---
       - name: Inject API Secret into index.html
         run: |
-          # Get the API URL from GitHub Secrets (FOOD_API_SECRET)
-          # Use sed to replace the placeholder string with the actual secret value.
-          # ${{ secrets.FOOD_API_SECRET }} refers to the secret you created in Phase 1.
-          # Note: Use single quotes for the sed command arguments and escape characters carefully.
+          # The file path is now relative to the repository root: recipes/index.html
           API_URL="${{ secrets.FOOD_API_SECRET }}"
           
           # Use perl for in-place, cross-platform replacement with variables
-          perl -pi -e 's|__API_URL_PLACEHOLDER__|$ENV{API_URL}|g' index.html
+          perl -pi -e 's|__API_URL_PLACEHOLDER__|$ENV{API_URL}|g' recipes/index.html
         env:
           API_URL: ${{ secrets.FOOD_API_SECRET }}
 
@@ -43,11 +40,11 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
-      # --- Upload Artifact ---
+      # --- Upload Artifact (Path Correction) ---
       - name: Upload Artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: '.' # Uploads the entire root directory (which now contains the modified index.html)
+          path: 'recipes' # Uploads the content of the 'recipes' folder
 
       # --- Deploy to Pages ---
       - name: Deploy to GitHub Pages
