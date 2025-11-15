@@ -1,0 +1,34 @@
+name: Inject API Secret into HTML
+
+on:
+  push:
+    branches: [ main ]  # Trigger on push to main; change if needed (e.g., add 'pull_request')
+  workflow_dispatch:  # Allows manual trigger from GitHub UI
+
+jobs:
+  inject:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Replace placeholder with secret
+      run: |
+        # Read the HTML file
+        sed -i "s/{{API_ID}}/${{ secrets.API_ID }}/g" tools/testing/index.html
+        # Verify the change (optional: echo the first few lines)
+        head -n 20 tools/testing/index.html
+
+    - name: Commit and push updated file
+      uses: stefanzweifel/git-auto-commit-action@v5
+      with:
+        commit_message: "Inject API ID into index.html"
+        file_pattern: tools/testing/index.html
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./tools/testing  # Or your build output dir

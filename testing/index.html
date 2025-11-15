@@ -1,18 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>API ID Test</title>
+    <meta charset="UTF-8">
+    <title>Testing API</title>
 </head>
 <body>
-  <h1>API ID Display</h1>
-  <div id="api-id">Loading API ID...</div>
-  <div id="api-result"></div>
-
-  <!-- Load the injected secret JS first -->
-  <script src="api.js"></script>
-  <!-- Then load your app logic -->
-  <script src="app.js"></script>
+    <h1>API Test</h1>
+    <div id="result"></div>
+    <script>
+        const apiId = '{{API_ID}}';  // Placeholder for injection
+        fetch(`https://api.example.com/data?key=${apiId}`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('result').innerHTML = JSON.stringify(data);
+            })
+            .catch(error => console.error('Error:', error));
+    </script>
 </body>
 </html>
