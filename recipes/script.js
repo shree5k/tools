@@ -3,6 +3,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const SHEET_NAME = 'Sheet1';
 
   const recipeDisplay = document.getElementById('recipe-display');
+  // NEW: Content area for scrolling
+  const recipeContent = document.getElementById('recipe-content');
+  // NEW: Fixed footer area
+  const asciiFooter = document.getElementById('ascii-footer');
+  
   const buttons = document.querySelectorAll('.phone-button');
   const addRecipeForm = document.getElementById('add-recipe-form');
   const addColumnSelect = document.getElementById('add-column');
@@ -10,9 +15,47 @@ document.addEventListener('DOMContentLoaded', () => {
   const closeAddSheetBtn = document.getElementById('close-add-sheet');
   const addSheetOverlay = document.getElementById('add-sheet-overlay');
   const chipButtons = document.querySelectorAll('.chip');
-  const showAllToggle = document.getElementById('show-all-toggle');
-  const inlineUpdateButton = document.getElementById('enable-inline-update');
   const addStatus = document.getElementById('add-status');
+  const showRecipesButton = document.getElementById('show-recipes-button');
+  const timeKeypad = document.getElementById('time-keypad');
+  const shuffleButton = document.getElementById('shuffle-button'); 
+  const actionKeypad = document.getElementById('action-keypad');
+
+  // ... (rest of variable declarations) ...
+
+  const ASCII_ART = `
+<pre>
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣤⡀⠀⠀⠀⢀⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⣾⠋⠉⣿⣤⣤⡾⠏⠛⢷⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢨⣿⣳⣿⠡⣠⣄⣚⣿⡟⣗⡄⠐⣈⣻⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣀⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣴⠟⠁⣀⠛⢋⡿⢻⡿⢻⠟⠁⣿⣿⣿⣇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡴⠛⠉⠉⠉⠉⠓⠶⣶⠲⠖⠒⠛⠒⠛⠒⠓⠓⠒⠒⠒⠶⠿⠶⣿⣿⣶⡿⢁⣾⣿⣄⠀⠀⠀⠀⠀⣿⡆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⢀⣠⣴⡟⠀⠀⠀⠀⣀⣤⣄⣀⠈⠳⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⠟⢁⡾⠛⢿⠿⣧⣄⡉⠀⠈⠿⣿⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⢀⣠⡴⠚⠉⣽⠃⠀⠀⢀⡴⠋⠉⠉⠙⢦⡀⠹⣦⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⠀⣀⡴⠋⣠⠞⠁⠀⠈⠀⠉⠙⠳⣦⣀⠠⣿⣧⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⢀⣴⠛⠁⠀⠀⢀⣿⢀⠀⠀⢸⠀⠀⠀⠀⠀⠀⢳⠀⠹⣇⠔⡁⠀⣰⠌⢀⣈⣭⠿⠛⢉⣴⣾⣷⣤⣄⣀⡀⠀⠀⠀⠀⠀⠙⢷⣟⢿⡇⠀⠀⠀⠀⠀⠀⠀⠀
+⢀⡿⠁⠀⠀⠀⣠⡼⣷⠸⡄⠀⠉⢷⡀⠀⠀⠀⢀⡼⠀⠀⣿⢀⣉⣷⡶⠿⢿⣏⣤⠶⣿⣿⡽⣶⣭⣉⠻⣯⡙⠳⢤⣀⠀⠀⠀⠀⢹⣾⣧⠀⠀⠀⠀⠀⠀⠀⠀
+⢸⡇⠀⠀⣠⢾⡟⠂⢻⡆⢳⣄⡀⠀⠙⠶⠤⠴⠛⠡⠔⢻⣿⣻⣿⡴⠶⠛⢻⣏⣡⣾⠿⠷⣤⣦⣴⣽⣷⣞⢿⡌⠘⢏⢳⣄⠀⠀⢀⣿⡟⠀⠀⠀⠀⠀⠀⠀⠀
+⠈⣷⡄⢰⡏⠰⠓⢠⡴⠿⡾⠿⢷⡀⠀⠀⠀⠀⠀⠀⣠⣾⣟⣿⡌⣷⣤⣴⡿⢛⣩⡴⠶⠳⣿⠿⢿⣿⠾⣿⡟⠋⠁⠀⠲⢽⡆⢀⣼⣿⠃⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⣿⣿⣶⣿⣄⠀⠸⣧⣀⣀⣀⣽⣟⣶⠶⡶⢶⣶⣫⣿⣋⣉⣙⣿⠌⣿⢷⡿⢻⡇⠀⠀⠀⠘⣻⠶⣶⠾⠟⢹⠆⠀⠀⢀⣼⣷⣿⣿⠏⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⢻⡌⠻⢿⣿⣷⣶⣬⣍⢻⣏⠻⣿⣟⠻⠿⢛⣻⣧⣌⣉⣉⣭⠟⢠⣿⡐⢿⣆⠻⣦⣀⣀⣴⠟⣠⡟⠀⢀⣀⣤⣴⣾⣿⣿⠟⢁⣿⣦⡀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⢿⣦⣀⠉⠛⠿⣿⣻⣿⣿⠷⢿⣿⣿⣽⣟⣻⣤⣉⣛⣫⣥⡀⢀⣸⣇⣼⣟⣶⣤⣭⣭⣴⣾⣿⠶⢿⢛⣏⣹⡴⠛⠁⢀⣴⣾⠿⣿⣟⣷⣦⠀⠀⠀⠀⠀⠀
+⠀⠀⠈⣿⣿⣿⣶⣤⣀⡈⠉⠛⠛⠶⠶⣦⣭⣎⣭⣋⣟⣙⣛⣛⣻⣛⣛⣛⣏⣻⣍⣯⣭⣱⡶⠶⠿⠓⠛⠋⠉⣀⡄⠀⣠⣟⣾⠃⠀⠈⠙⠛⠁⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠈⠻⣿⣷⢯⡿⣽⢿⣶⣶⡲⣤⠤⣄⣀⣀⣁⣈⣉⡉⠉⠁⠉⠉⠉⣈⣁⣈⣀⣀⣀⡤⣤⠴⣲⠒⣏⣿⠏⠀⡴⣧⡿⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠙⢿⣿⣽⣻⣟⣮⣟⣷⡌⢳⡘⢬⢲⡡⢎⠭⣙⠏⢯⡹⢭⡙⢥⠚⡔⡣⣜⢡⠞⣠⢛⡤⢯⡴⢬⡷⣞⣷⠏⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠙⢷⣿⣟⣾⡽⣾⢿⡆⡝⣆⠣⡜⣡⢋⢆⡛⢦⠱⢦⡙⢦⠛⣬⠱⡌⠮⡜⢥⣋⡜⢯⣤⣞⣵⠟⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⠻⣯⣿⣯⣟⣿⣶⣌⠳⡜⢤⢋⠦⡙⢦⡙⠦⡙⢦⠹⢤⠓⣍⠞⡸⢆⡱⢎⣽⠿⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡼⠛⠻⣿⣾⣿⣷⣯⡘⢣⠞⡲⢩⠦⣙⠲⣍⠲⡙⢦⡙⢦⣩⣵⣾⠿⡟⢣⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⡄⠠⠰⠘⢿⣿⣿⡿⣿⣷⣮⣵⣧⣾⣤⣷⣬⣧⣽⣶⣿⣿⣿⣿⠃⢃⠀⠂⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣀⣤⣤⣤⣄⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠻⣍⡀⠂⠌⠛⢿⣿⣿⣿⣽⣯⣿⣽⣯⣿⣽⣿⣽⣷⣿⠿⠋⠡⠈⠁⠈⠼⠃⢀⣀⣠⣤⠤⠶⠶⠚⠛⠋⠉⠉⠀⠀⣐⣿⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⠳⠦⣔⣀⠊⠉⠉⠛⠛⠛⠿⠻⠟⠟⠻⠛⠛⠩⠙⣀⣂⣤⣤⣶⠶⠶⠒⠚⠋⠉⠉⠀⠀⢀⣀⣀⣴⣤⣶⠶⠶⢿⡟⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠁⠉⠐⠀⠉⠐⢠⣥⣬⣭⠶⠷⠞⠛⠋⠉⠉⣀⣀⣀⣠⣒⣤⣥⣬⠶⠶⢿⠛⠻⠭⠉⠁⠀⠀⠈⠉⠀⣀⣀⣤⡀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⣀⣤⡤⠤⠶⠒⠛⠋⢉⠉⣁⣀⣠⣤⣤⣴⠶⠾⠾⠟⠛⠛⠙⠉⠉⠀⠀⢀⣀⣀⣠⣤⠤⠤⠶⠖⠚⠛⠛⠉⠉⠉⠁⢀⣿
+⠀⠀⠀⠀⠀⠀⠀⠀⢀⣶⠛⠛⠉⢉⣀⣀⣠⣤⣤⣴⠶⠾⠛⠛⠛⠉⠉⠀⠀⣀⣀⣀⣤⣤⡤⠶⠶⠖⠚⠛⠋⠉⠉⠁⠀⢀⣀⣠⣤⣠⣤⣤⣤⡶⠶⠿⠟⣛⡏
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠻⠶⠛⠛⠋⠉⠉⣁⣀⣀⣄⡤⡤⠤⠶⠖⠒⠚⠛⠉⠉⢉⡀⣀⣀⣠⣤⣤⣤⣴⠶⠶⠷⠟⠾⠛⠛⠉⠉⠉⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣴⠖⠚⠛⠉⠉⠉⣁⣀⣤⣄⣠⣤⣤⣴⠶⠶⠶⠛⠛⠛⠋⠙⠉⠉⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠻⠶⠶⠞⠛⠛⠛⠛⠉⠉⠉⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+</pre>
+`;
 
   let currentlyActiveButton = null;
   let recipesData = null;
@@ -20,9 +63,16 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentRecipe = null;
   let inlineUpdateStatusEl = null;
   let currentTimeKey = null;
-  let showAllMode = false;
+  let isShowingRecipesView = false; 
 
-  updateInlineButtonState();
+  // Initializing the fixed ASCII footer
+  if (asciiFooter) {
+      asciiFooter.innerHTML = ASCII_ART;
+      asciiFooter.classList.add('hidden'); // Ensure it starts hidden until renderInitialRecipes is called
+  }
+
+  updateViewVisibility(); 
+  updateHeaderButtonsState(); 
 
   function buildApiUrl(action, params = {}) {
     const searchParams = new URLSearchParams({
@@ -68,57 +118,114 @@ document.addEventListener('DOMContentLoaded', () => {
 
   syncAddChipsWithCurrentTime(addColumnSelect?.value || 'morning');
 
-  function updateInlineButtonState() {
-    if (!inlineUpdateButton) return;
-    inlineUpdateButton.disabled = showAllMode || !currentRecipe || !currentRecipe.id;
+  function updateHeaderButtonsState() {
+    if (!shuffleButton) return;
+
+    if (isShowingRecipesView) {
+      shuffleButton.disabled = true;
+    } else {
+      shuffleButton.disabled = false;
+    }
   }
 
-  function renderCurrentRecipe(message) {
-    if (!recipeDisplay) return;
+  function updateViewVisibility() {
+    if (isShowingRecipesView) {
+      timeKeypad.classList.remove('hidden');
+      actionKeypad.classList.add('hidden');
+      asciiFooter?.classList.add('hidden'); // Hide ASCII footer in list view
+      showRecipesButton.textContent = 'Random Suggestions';
+    } else {
+      timeKeypad.classList.add('hidden');
+      actionKeypad.classList.remove('hidden');
+      asciiFooter?.classList.remove('hidden'); // Show ASCII footer in random view
+      showRecipesButton.textContent = 'Show Recipes';
+    }
+    updateHeaderButtonsState();
+  }
+
+  function getRandomTimeKey() {
+    const times = ['Morning', 'Afternoon', 'Night'];
+    return times[Math.floor(Math.random() * times.length)];
+  }
+  
+  function renderRecipeDisplayMessage(message) {
+      if (!recipeContent) return;
+      recipeContent.innerHTML = `<p>${message}</p>`;
+      currentRecipe = null;
+      updateHeaderButtonsState();
+  }
+
+  // UPDATED: Simple, plain UI with IDs added to the end of each line
+  function renderInitialRecipes() {
+    if (!recipesData) {
+        renderRecipeDisplayMessage('Loading recipes...');
+        return;
+    }
+
+    const morning = getRandomRecipe('Morning');
+    const afternoon = getRandomRecipe('Afternoon');
+    const night = getRandomRecipe('Night');
+    
+    currentRecipe = null;
+    currentTimeKey = null;
+
+    // Helper to format the suggestion line with ID
+    const formatSuggestionLine = (time, recipe) => {
+        const idDisplay = recipe && recipe.id ? ` (ID: ${recipe.id})` : '';
+        const value = recipe ? recipe.value + idDisplay : 'No recipe available';
+        
+        // Using simple P and STRONG for hierarchy
+        return `<p><strong>${time}:</strong> ${value}</p>`;
+    };
+
+    const content = `
+        ${formatSuggestionLine('Morning', morning)}
+        ${formatSuggestionLine('Afternoon', afternoon)}
+        ${formatSuggestionLine('Night', night)}
+        <h4><i>lets cook</i></h4>
+    `;
+    
+    // Inject content into the scrolling container
+    recipeContent.innerHTML = content;
+    updateHeaderButtonsState();
+  }
+
+  function renderAllRecipesForTime(timeKey) {
+    if (!recipeContent) return;
     inlineUpdateStatusEl = null;
 
-    if (message) {
-      recipeDisplay.innerHTML = `<p>${message}</p>`;
-      updateInlineButtonState();
-      return;
+    const list = recipesData?.[timeKey];
+    if (!list || list.length === 0) {
+        renderRecipeDisplayMessage(`No recipes available for ${timeKey}.`);
+        return;
     }
+    
+    const column = timeKey.toLowerCase();
 
-    if (showAllMode) {
-      if (!currentTimeKey) {
-        recipeDisplay.innerHTML = '<p>Select a time to view recipes.</p>';
-        updateInlineButtonState();
-        return;
-      }
-      const list = recipesData?.[currentTimeKey];
-      if (!list || list.length === 0) {
-        recipeDisplay.innerHTML = `<p>No recipes available for ${currentTimeKey.toLowerCase()}.</p>`;
-        updateInlineButtonState();
-        return;
-      }
-      const items = list.map(recipe => `<li>${recipe.value}</li>`).join('');
-      recipeDisplay.innerHTML = `
+    const items = list.map(recipe => {
+        // Embed ID and column for double-click to work
+        const dataAttributes = recipe.id 
+            ? `data-id="${recipe.id}" data-column="${column}" data-label="${timeKey}"`
+            : '';
+        return `<li ${dataAttributes} style="cursor: pointer;" title="Double-tap to edit">${recipe.value}</li>`;
+    }).join('');
+
+    const content = `
         <div class="all-recipes">
-          <div class="all-recipes-title">${currentTimeKey} recipes</div>
-          <ol class="all-recipes-list">${items}</ol>
+            <div class="all-recipes-title">${timeKey} recipes (Double-tap to update)</div>
+            <ol class="all-recipes-list">${items}</ol>
         </div>
-      `;
-      updateInlineButtonState();
-      return;
-    }
+    `;
 
-    if (!currentRecipe) {
-      recipeDisplay.innerHTML = '<p>Select a time to get a recipe.</p>';
-      updateInlineButtonState();
-      return;
-    }
-
-    recipeDisplay.innerHTML = `<p>${currentRecipe.value}</p>`;
-    updateInlineButtonState();
+    // Inject content into the scrolling container
+    recipeContent.innerHTML = content;
+    currentRecipe = null;
+    updateHeaderButtonsState();
   }
 
   function openAddSheet() {
     if (!addSheetOverlay) return;
-    syncAddChipsWithCurrentTime();
+    syncAddChipsWithCurrentTime(currentTimeKey);
     setStatus(addStatus, '');
     addSheetOverlay.classList.add('visible');
     addSheetOverlay.setAttribute('aria-hidden', 'false');
@@ -134,13 +241,17 @@ document.addEventListener('DOMContentLoaded', () => {
     addSheetOverlay.setAttribute('aria-hidden', 'true');
   }
 
-  function showInlineUpdateForm() {
-    if (!currentRecipe || !currentRecipe.id) return;
-    recipeDisplay.innerHTML = `
+  function showInlineUpdateForm(recipeData) {
+    const recipe = recipeData;
+    if (!recipe || !recipe.id) return;
+
+    currentRecipe = recipe; 
+
+    const formContent = `
       <form id="inline-update-form" class="inline-update-form">
         <label>
-          Editing ${currentRecipe.label || currentRecipe.column} recipe
-          <textarea name="value" required>${currentRecipe.value}</textarea>
+          Editing ${recipe.label || recipe.column} recipe (ID: ${recipe.id})
+          <textarea name="value" required>${recipe.value}</textarea>
         </label>
         <div class="inline-update-actions">
           <button type="button" id="cancel-inline-update">Cancel</button>
@@ -149,13 +260,23 @@ document.addEventListener('DOMContentLoaded', () => {
         <p class="status-message" id="inline-update-status"></p>
       </form>
     `;
+    
+    // Inject form into the scrolling container
+    recipeContent.innerHTML = formContent;
+    
     const inlineForm = document.getElementById('inline-update-form');
     inlineUpdateStatusEl = document.getElementById('inline-update-status');
     const cancelButton = document.getElementById('cancel-inline-update');
+    
     cancelButton?.addEventListener('click', () => {
       inlineUpdateStatusEl = null;
-      renderCurrentRecipe();
+      if (isShowingRecipesView) {
+        renderAllRecipesForTime(currentTimeKey); 
+      } else {
+        renderInitialRecipes(); 
+      }
     });
+    
     inlineForm?.addEventListener('submit', onInlineUpdateSubmit);
     const textarea = inlineForm?.querySelector('textarea');
     if (textarea instanceof HTMLTextAreaElement) {
@@ -165,7 +286,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function onInlineUpdateSubmit(event) {
     event.preventDefault();
-    if (!currentRecipe || !currentRecipe.id) return;
+    if (!currentRecipe || !currentRecipe.id) return; 
+    
     const form = event.currentTarget;
     if (!(form instanceof HTMLFormElement)) {
       return;
@@ -186,27 +308,29 @@ document.addEventListener('DOMContentLoaded', () => {
         column: currentRecipe.column,
         value: newValue,
       });
-      currentRecipe.value = newValue;
-      renderCurrentRecipe();
       await fetchRecipes();
+      
+      if (isShowingRecipesView) {
+        renderAllRecipesForTime(currentTimeKey);
+      } else {
+        renderInitialRecipes(); 
+      }
     } catch (error) {
       console.error(error);
       setStatus(inlineUpdateStatusEl, error.message || 'Failed to update recipe.', true);
     }
   }
 
-  // Fetch recipes from API
   async function fetchRecipes() {
     if (isLoading) return;
     
     try {
       isLoading = true;
-      const url = buildApiUrl('read');
+      const url = buildApiUrl('read', { cache: Date.now() }); // Added cache buster for immediate refresh
       const response = await fetch(url);
       const result = await response.json();
       
       if (result.data && Array.isArray(result.data)) {
-        // Transform API data into recipe arrays
         const recipes = {
           Morning: [],
           Afternoon: [],
@@ -227,9 +351,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         
         recipesData = recipes;
-        if (showAllMode) {
-          renderCurrentRecipe();
-        }
         return recipes;
       } else {
         throw new Error('Invalid data format');
@@ -237,15 +358,13 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (error) {
       console.error('Error fetching recipes:', error);
       currentRecipe = null;
-      recipeDisplay.innerHTML = '<p>Error loading recipes. Please try again.</p>';
-      updateInlineButtonState();
+      renderRecipeDisplayMessage('Error loading recipes. Please try again.');
       return null;
     } finally {
       isLoading = false;
     }
   }
 
-  // Get random recipe for a specific time
   function getRandomRecipe(time) {
     if (!recipesData) {
       return null;
@@ -258,59 +377,48 @@ document.addEventListener('DOMContentLoaded', () => {
     return null;
   }
 
-  function setRandomRecipeForTime(timeKey) {
-    const randomRecipe = getRandomRecipe(timeKey);
-    if (randomRecipe) {
-      currentRecipe = {
-        id: randomRecipe.id,
-        value: randomRecipe.value,
-        column: timeKey.toLowerCase(),
-        label: timeKey,
-      };
-      return true;
-    }
-    currentRecipe = null;
-    return false;
-  }
-
-  async function submitAddRecipe(payload) {
-    const url = buildApiUrl('write', payload);
-    const response = await fetch(url);
-    const result = await response.json();
-    if (!response.ok) {
-      throw new Error(result.error || 'Failed to add recipe');
-    }
-    return result;
-  }
-
-  async function submitUpdateRecipe({ id, column, value }) {
-    const url = buildApiUrl('update', { id, column, value });
-    const response = await fetch(url);
-    const result = await response.json();
-    if (!response.ok) {
-      throw new Error(result.error || 'Failed to update recipe');
-    }
-    return result;
-  }
-
-  // Initialize: Fetch recipes on page load
+  // Initializer
   fetchRecipes().then(() => {
     if (recipesData) {
-      currentRecipe = null;
-      renderCurrentRecipe('Ready! Select a time to get a recipe.');
+      renderInitialRecipes(); 
+      updateViewVisibility(); 
     }
   });
+  
+  if (recipeContent) {
+    recipeContent.addEventListener('dblclick', (event) => {
+        // Double-click is ONLY relevant in the 'Show Recipes' list view
+        if (!isShowingRecipesView) return;
+
+        let target = event.target;
+        let recipeData = null;
+
+        while (target && target !== recipeContent) {
+            if (target.tagName === 'LI' && target.dataset.id) {
+                recipeData = {
+                    id: target.dataset.id,
+                    column: target.dataset.column,
+                    label: target.dataset.label,
+                    value: target.textContent.trim()
+                };
+                break;
+            }
+            target = target.parentElement;
+        }
+        
+        if (recipeData) {
+            showInlineUpdateForm(recipeData);
+        }
+    });
+  }
+
 
   if (openAddSheetBtn) {
-    openAddSheetBtn.addEventListener('click', () => {
-      openAddSheet();
-    });
+    openAddSheetBtn.addEventListener('click', openAddSheet);
   }
 
   if (closeAddSheetBtn) {
-    closeAddSheetBtn.addEventListener('click', () => {
-      closeAddSheet();
-    });
+    closeAddSheetBtn.addEventListener('click', closeAddSheet);
   }
 
   if (addSheetOverlay) {
@@ -329,11 +437,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   buttons.forEach(button => {
     button.addEventListener('click', async () => {
-      // Deactivate previously active button
+      if (!isShowingRecipesView) return; 
+
       if (currentlyActiveButton) {
         currentlyActiveButton.classList.remove('active');
       }
-      // Activate the clicked button
       button.classList.add('active');
       currentlyActiveButton = button;
 
@@ -343,47 +451,48 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       currentTimeKey = time;
       
-      // Show loading state
-      recipeDisplay.innerHTML = '<p>Loading...</p>';
-      currentRecipe = null;
-      inlineUpdateStatusEl = null;
-      updateInlineButtonState();
+      renderRecipeDisplayMessage('Loading...');
 
-      // Ensure we have recipes data
       if (!recipesData) {
         await fetchRecipes();
       }
 
-      if (showAllMode) {
-        renderCurrentRecipe();
-      } else if (setRandomRecipeForTime(time)) {
-        renderCurrentRecipe();
-      } else {
-        renderCurrentRecipe('No recipes available for this time. Please try again later.');
-      }
-
+      renderAllRecipesForTime(time);
       syncAddChipsWithCurrentTime(time);
     });
   });
 
-  if (inlineUpdateButton) {
-    inlineUpdateButton.addEventListener('click', () => {
-      if (!currentRecipe || !currentRecipe.id) {
-        return;
-      }
-      showInlineUpdateForm();
+  if (shuffleButton) {
+    shuffleButton.addEventListener('click', () => {
+        if (shuffleButton.disabled) return; 
+        
+        if (!recipesData) {
+            renderRecipeDisplayMessage('Loading recipes...');
+            fetchRecipes().then(renderInitialRecipes);
+        } else {
+            renderInitialRecipes(); 
+        }
     });
   }
+  
+  if (showRecipesButton && timeKeypad) {
+    showRecipesButton.addEventListener('click', () => {
+      isShowingRecipesView = !isShowingRecipesView; 
 
-  if (showAllToggle) {
-    showAllToggle.addEventListener('change', () => {
-      showAllMode = showAllToggle.checked;
-      if (showAllMode) {
-        currentRecipe = null;
-      } else if (currentTimeKey) {
-        setRandomRecipeForTime(currentTimeKey);
+      if (currentlyActiveButton) {
+        currentlyActiveButton.classList.remove('active');
+        currentlyActiveButton = null;
       }
-      renderCurrentRecipe();
+
+      updateViewVisibility(); 
+
+      if (isShowingRecipesView) {
+        currentTimeKey = null;
+        currentRecipe = null;
+        renderRecipeDisplayMessage('Select a time to view all recipes.');
+      } else {
+        renderInitialRecipes();
+      }
     });
   }
 
@@ -419,6 +528,13 @@ document.addEventListener('DOMContentLoaded', () => {
         syncAddChipsWithCurrentTime(column);
         closeAddSheet();
         await fetchRecipes();
+        
+        if (isShowingRecipesView && currentTimeKey) {
+            renderAllRecipesForTime(currentTimeKey);
+        } else {
+            renderInitialRecipes();
+        }
+
       } catch (error) {
         console.error(error);
         setStatus(addStatus, error.message || 'Failed to add recipe.', true);
