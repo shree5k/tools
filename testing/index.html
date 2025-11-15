@@ -1,17 +1,18 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>API ID Test</title>
 </head>
 <body>
-  <h1>API ID Test</h1>
-  <div id="api-id"></div>
+  <h1>API ID Display</h1>
+  <div id="api-id">Loading API ID...</div>
+  <div id="api-result"></div>
+
+  <!-- Load the injected secret JS first -->
   <script src="api.js"></script>
-    <script src="app.js"></script>
-  <script>
-    // API_ID variable now available
-    document.getElementById('api-id').textContent = `API_ID: ${API_ID}`;
-    // Use API_ID in your JS as needed
-  </script>
+  <!-- Then load your app logic -->
+  <script src="app.js"></script>
 </body>
 </html>

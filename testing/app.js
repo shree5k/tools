@@ -1,16 +1,13 @@
-// app.js
+// Use API_ID from api.js
+document.getElementById('api-id').textContent = `API_ID: ${API_ID}`;
 
-// Use the injected global variable API_ID
-console.log('API ID is:', API_ID);
-
-// Example of using API_ID to make a request (illustrative only)
-fetch(`https://example.com/api/some-endpoint?api_id=${API_ID}`)
+// Example API call - replace with your API endpoint
+fetch(`https://example.com/api/data?api_id=${API_ID}`)
   .then(response => response.json())
   .then(data => {
-    // Do something with API response
-    document.getElementById('api-result').textContent = JSON.stringify(data);
+    document.getElementById('api-result').textContent = JSON.stringify(data, null, 2);
   })
   .catch(error => {
-    // Handle error
+    document.getElementById('api-result').textContent = 'Error fetching API data';
     console.error(error);
   });

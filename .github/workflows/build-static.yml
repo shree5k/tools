@@ -12,10 +12,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Inject API secret into JS
-        run: |
-          echo "const API_ID = '${{ secrets.API_ID }}';" > tools/testing/api.js
+      - name: Create directory before writing secret
+        run: mkdir -p tools/testing
 
-      # Example deployment step (replace with your needs)
+      - name: Inject API secret into JS
+        run: echo "const API_ID = '${{ secrets.API_ID }}';" > tools/testing/api.js
+
       - name: Deploy or publish site
         run: echo "Deploy step here"
+
