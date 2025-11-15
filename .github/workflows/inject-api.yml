@@ -5,6 +5,9 @@ on:
     branches: [ main ]  # Trigger on push to main; change if needed
   workflow_dispatch:  # Allows manual trigger
 
+permissions:
+  contents: write  # Explicitly grant write access to repo contents for GITHUB_TOKEN
+
 jobs:
   inject:
     runs-on: ubuntu-latest
@@ -14,6 +17,7 @@ jobs:
       uses: actions/checkout@v4
       with:
         ref: main  # Ensure it checks out the correct branch
+        token: ${{ secrets.GITHUB_TOKEN }}  # Use token for full history if needed
 
     - name: List files in repo (debug)
       run: |
