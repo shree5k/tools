@@ -212,7 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const content = `
         <div class="all-recipes">
-            <div class="all-recipes-title">${timeKey} recipes (Double-tap to update)</div>
+            <div class="all-recipes-title">${timeKey} recipes</div>
             <ol class="all-recipes-list">${items}</ol>
         </div>
     `;
