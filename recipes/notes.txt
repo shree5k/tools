@@ -1,0 +1,2 @@
+1. by default toggle selected
+2. double click to add to tomorrows meal prep
