@@ -1,0 +1,21 @@
+name: Build Static Site
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Inject API secret into JS
+        run: |
+          echo "const API_ID = '${{ secrets.API_ID }}';" > tools/testing/api.js
+
+      - name: Deploy or publish site (example: GitHub Pages)
+        # Replace this with your static hosting deployment step
+        run: echo "Deploy step here"
