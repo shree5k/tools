@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const API_BASE_URL = window.FOOD_API_SECRET || 'https://placeholder.api.url/exec';
   const SHEET_NAME = 'Sheet1';
 
   const recipeDisplay = document.getElementById('recipe-display');
@@ -20,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const timeKeypad = document.getElementById('time-keypad');
   const shuffleButton = document.getElementById('shuffle-button'); 
   const actionKeypad = document.getElementById('action-keypad');
+  const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbw5IIoGYCrQh1vCGxokHl5Uiy2sE-dW7ITA0KmBu2DGB78hKM64pQpH__9GkcJdgoLe/exec';
 
   // ... (rest of variable declarations) ...
 

@@ -377,6 +377,7 @@
         opacity: 0;
         transition: opacity 0.2s ease, visibility 0.2s ease;
         visibility: hidden;
+        z-index: 1000;
       }
       .add-sheet-overlay.visible {
         pointer-events: auto;
@@ -503,8 +504,4 @@
     </div>
     <script src="script.js"></script>
 </body>
-<script>
-  // Placeholder for GitHub Action Injection
-  window.GHSHEET_API_URL = '__API_URL_PLACEHOLDER__';
-</script>
 </html>
