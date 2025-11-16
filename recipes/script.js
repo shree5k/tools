@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const SHEET_NAME = 'Sheet1';
 
   const recipeDisplay = document.getElementById('recipe-display');
+  const currentDateElement = document.getElementById('current-date');
   // NEW: Content area for scrolling
   const recipeContent = document.getElementById('recipe-content');
   // NEW: Fixed footer area
@@ -19,10 +20,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const timeKeypad = document.getElementById('time-keypad');
   const shuffleButton = document.getElementById('shuffle-button'); 
   const actionKeypad = document.getElementById('action-keypad');
-  const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbw5IIoGYCrQh1vCGxokHl5Uiy2sE-dW7ITA0KmBu2DGB78hKM64pQpH__9GkcJdgoLe/exec';
-
-  // ... (rest of variable declarations) ...
-
+  const ENCODED_API_URL = 'aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J3NUlJb0dZQ3JRaDF2Q0d4b2tIbDVVaXkyc0UtZFc3SVRBMEttQnUyREdCNzhoS002NHBRcEhfXzlHa2NKZGdvTGUvZXhlYw==';
+  const API_BASE_URL = atob(ENCODED_API_URL);
   const ASCII_ART = `
 <pre>
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣤⡀⠀⠀⠀⢀⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
@@ -171,7 +170,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Helper to format the suggestion line with ID
     const formatSuggestionLine = (time, recipe) => {
-        const idDisplay = recipe && recipe.id ? ` (ID: ${recipe.id})` : '';
+        const idDisplay = recipe && recipe.id ? ` (${recipe.id})` : '';
         const value = recipe ? recipe.value + idDisplay : 'No recipe available';
         
         // Using simple P and STRONG for hierarchy
@@ -250,7 +249,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const formContent = `
       <form id="inline-update-form" class="inline-update-form">
         <label>
-          Editing ${recipe.label || recipe.column} recipe (ID: ${recipe.id})
+          Editing ${recipe.label || recipe.column} recipe (${recipe.id})
           <textarea name="value" required>${recipe.value}</textarea>
         </label>
         <div class="inline-update-actions">
@@ -383,7 +382,18 @@ document.addEventListener('DOMContentLoaded', () => {
       renderInitialRecipes(); 
       updateViewVisibility(); 
     }
+    displayCurrentDate();
   });
+
+  function displayCurrentDate() {
+    if (!currentDateElement) return;
+    const now = new Date();
+    const weekday = now.toLocaleDateString('en-US', { weekday: 'short' });
+    const month = now.toLocaleDateString('en-US', { month: 'short' });
+    const year = now.getFullYear().toString().slice(-2);
+    const formattedDate = `${weekday} ${month} ${year}`;
+    currentDateElement.textContent = formattedDate;
+  }
   
   if (recipeContent) {
     recipeContent.addEventListener('dblclick', (event) => {

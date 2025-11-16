@@ -435,6 +435,10 @@
         background-color: #3b4f3b;
         animation: blink-caret .75s step-end infinite;
       }
+      #current-date {
+        font-size: 14px;
+        margin-top: 12px;
+      }
       @media (max-width: 768px) { 
         .phone-body {
           height: 80vh;
@@ -453,8 +457,9 @@
               <button class="header-button" id="show-recipes-button">Show Recipes</button>
             </div>
           </div>
-
+          
           <div class="recipe-display" id="recipe-display">
+            <div id="current-date" class="screen-title"></div>
             <!-- This inner div is the scrollable content container -->
             <div id="recipe-content">
               <span class="blinking-cursor">&nbsp;</span>
