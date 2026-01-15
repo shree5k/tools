@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mock Records</title>
+    <title>Record Mocks</title>
     <style>
         * {
             margin: 0;
@@ -131,68 +131,59 @@
             opacity: 1;
         }
 
-        #controls {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(255,255,255,0.95);
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            z-index: 100;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        #controls button {
-            padding: 8px 16px;
-            background: #0066ff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        #controls button:hover {
-            background: #0052cc;
-        }
-
-        #controls select {
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 14px;
-            cursor: pointer;
-        }
-
-        #controls label {
-            font-size: 12px;
-            color: #666;
-            margin-bottom: -5px;
-        }
-
         .shortcut-hint {
             position: fixed;
             top: 20px;
             right: 20px;
             background: rgba(0,0,0,0.8);
             color: white;
-            padding: 8px 12px;
+            padding: 10px 12px;
             border-radius: 4px;
             font-size: 12px;
             z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: flex-end;
+        }
+
+        .copy-icon {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+
+        .copy-icon:hover {
+            opacity: 1;
+        }
+
+        .preset-dropdown {
+            width: 100%;
+            padding: 4px 8px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .preset-dropdown option {
+            background: #333;
+            color: white;
         }
     </style>
 </head>
 <body>
-    <div class="shortcut-hint">Press R to restart video</div>
-
-    <div id="controls">
-        <button id="copyBtn">Copy Position & Scale</button>
-        <label>Load Preset:</label>
-        <select id="presetSelect">
+    <div class="shortcut-hint">
+        <span>Press R to restart video</span>
+        <svg class="copy-icon" id="copyBtn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+        </svg>
+        <select class="preset-dropdown" id="presetSelect">
             <option value="">-- Select Preset --</option>
         </select>
     </div>
@@ -239,7 +230,8 @@
 
         // Preset positions storage - using absolute pixel values relative to frame
         const presets = [
-            { name: "Bottom Half", leftRatio: 0.153, topRatio: 0.026, widthRatio: 0.695, heightRatio: 1.369 }
+            { name: "Bottom Half", leftRatio: 0.153, topRatio: 0.026, widthRatio: 0.695, heightRatio: 1.369 },
+            { name: "Bottom Half x2", leftRatio: 0.107, topRatio: 0.047, widthRatio: 0.787, heightRatio: 1.551 }
         ];
 
         // Populate preset dropdown
@@ -536,15 +528,25 @@
                 heightRatio
             };
             
-            presets.push(positionData);
+            // Format for copying
+            const copyText = `{ name: "${positionData.name}", leftRatio: ${leftRatio}, topRatio: ${topRatio}, widthRatio: ${widthRatio}, heightRatio: ${heightRatio} }`;
             
-            const option = document.createElement('option');
-            option.value = presets.length - 1;
-            option.textContent = positionData.name;
-            presetSelect.appendChild(option);
-            
-            console.log('Saved position:', positionData);
-            alert(`Position & Scale copied!\n\nLeft: ${leftRatio}\nTop: ${topRatio}\nWidth: ${widthRatio}\nHeight: ${heightRatio}`);
+            // Copy to clipboard
+            navigator.clipboard.writeText(copyText).then(() => {
+                // Add to presets
+                presets.push(positionData);
+                
+                const option = document.createElement('option');
+                option.value = presets.length - 1;
+                option.textContent = positionData.name;
+                presetSelect.appendChild(option);
+                
+                console.log('Copied to clipboard:', copyText);
+                alert(`Position & Scale copied to clipboard!\n\n${copyText}`);
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+                alert(`Position & Scale:\n\n${copyText}\n\n(Copy manually)`);
+            });
         });
 
         // Load preset
