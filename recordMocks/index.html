@@ -30,10 +30,19 @@
             box-shadow: 0 10px 40px rgba(0,0,0,0.3);
         }
 
+        #shadowFrame {
+            position: absolute;
+            background-color: #000;
+            box-shadow: 0 4px 40px 8px rgba(0, 0, 0, 0.32), 0 0 0 0.5px rgba(0, 0, 0, 0.64);
+            z-index: 8;
+            pointer-events: none;
+        }
+
         #video {
             position: absolute;
             display: none;
             object-fit: cover;
+            z-index: 9;
         }
 
         #mockupContainer {
@@ -196,6 +205,7 @@
             <p>Drop video file here</p>
         </div>
         
+        <div id="shadowFrame"></div>
         <video id="video"></video>
         
         <div id="mockupContainer">
@@ -212,6 +222,7 @@
         const mockupContainer = document.getElementById('mockupContainer');
         const mockup = document.getElementById('mockup');
         const video = document.getElementById('video');
+        const shadowFrame = document.getElementById('shadowFrame');
         const snapH = document.getElementById('snapH');
         const snapV = document.getElementById('snapV');
         const dropZone = document.getElementById('dropZone');
@@ -228,10 +239,13 @@
         let videoLoaded = false;
         let frameSize = 0;
 
-        // Preset positions storage - using absolute pixel values relative to frame
+        const SHADOW_WIDTH_RATIO = 702 / 782.63;   // ≈ 0.91 of mock width
+        const SHADOW_HEIGHT_RATIO = 1460 / 1542.09; // ≈ 1.00 of mock height
+
         const presets = [
-            { name: "Bottom Half", leftRatio: 0.153, topRatio: 0.026, widthRatio: 0.695, heightRatio: 1.369 },
-            { name: "Bottom Half x2", leftRatio: 0.107, topRatio: 0.047, widthRatio: 0.787, heightRatio: 1.551 }
+            { name: "Top Half", leftRatio: 0.153, topRatio: 0.026, widthRatio: 0.695, heightRatio: 1.369 },
+            { name: "Top Half x2", leftRatio: 0.107, topRatio: 0.047, widthRatio: 0.787, heightRatio: 1.551 },
+            { name: "Bottom Half", leftRatio: 0.114, topRatio: -0.583, widthRatio: 0.772, heightRatio: 1.522 }
         ];
 
         // Populate preset dropdown
@@ -256,31 +270,25 @@
             fitMockupToFrame();
         });
 
-        // Initialize mockup to fit frame
         mockup.onload = function() {
             aspectRatio = mockup.naturalWidth / mockup.naturalHeight;
             fitMockupToFrame();
         };
 
         function fitMockupToFrame() {
-            // Calculate dimensions that fill the frame while maintaining aspect ratio
             let containerWidth, containerHeight;
             
             if (aspectRatio >= 1) {
-                // Image is wider or square - fill by height
                 containerHeight = frameSize;
                 containerWidth = frameSize * aspectRatio;
             } else {
-                // Image is taller - fill by width
                 containerWidth = frameSize;
                 containerHeight = frameSize / aspectRatio;
             }
             
-            // Reduce by 50%
             containerWidth *= 0.5;
             containerHeight *= 0.5;
             
-            // Center the mockup in the frame
             const left = (frameSize - containerWidth) / 2;
             const top = (frameSize - containerHeight) / 2;
             
@@ -289,21 +297,40 @@
             mockupContainer.style.left = left + 'px';
             mockupContainer.style.top = top + 'px';
             
+            syncShadowFrame();
+            
             if (videoLoaded) {
                 syncVideoToMockup();
             }
+        }
+
+        function syncShadowFrame() {
+            const mockupRect = mockupContainer.getBoundingClientRect();
+            const frameRect = frame.getBoundingClientRect();
+
+            const shadowWidth = mockupRect.width * SHADOW_WIDTH_RATIO;
+            const shadowHeight = mockupRect.height * SHADOW_HEIGHT_RATIO;
+
+            const mockCenterX = (mockupRect.left - frameRect.left) + mockupRect.width / 2;
+            const mockCenterY = (mockupRect.top - frameRect.top) + mockupRect.height / 2;
+
+            const shadowLeft = mockCenterX - shadowWidth / 2;
+            const shadowTop = mockCenterY - shadowHeight / 2;
+
+            shadowFrame.style.left = shadowLeft + 'px';
+            shadowFrame.style.top = shadowTop + 'px';
+            shadowFrame.style.width = shadowWidth + 'px';
+            shadowFrame.style.height = shadowHeight + 'px';
+            shadowFrame.style.borderRadius = '85px';
         }
 
         function syncVideoToMockup() {
             const mockupRect = mockupContainer.getBoundingClientRect();
             const frameRect = frame.getBoundingClientRect();
             
-            // Calculate video dimensions based on mockup size
-            // Using the ratio from the example: 651.9/782.63 ≈ 0.833 for width, 1417.31/1542.09 ≈ 0.919 for height
             const videoWidth = mockupRect.width * 0.833;
             const videoHeight = mockupRect.height * 0.919;
             
-            // Center the video within the mockup
             const videoLeft = (mockupRect.left - frameRect.left) + (mockupRect.width - videoWidth) / 2;
             const videoTop = (mockupRect.top - frameRect.top) + (mockupRect.height - videoHeight) / 2;
             
@@ -312,9 +339,10 @@
             video.style.width = videoWidth + 'px';
             video.style.height = videoHeight + 'px';
             video.style.borderRadius = '20px';
+            
+            syncShadowFrame();
         }
 
-        // Handle resize handles
         const resizeHandles = document.querySelectorAll('.resize-handle');
         resizeHandles.forEach(handle => {
             handle.addEventListener('mousedown', (e) => {
@@ -334,7 +362,6 @@
             });
         });
 
-        // Handle dragging the container
         mockupContainer.addEventListener('mousedown', (e) => {
             if (e.target.classList.contains('resize-handle')) {
                 return;
@@ -350,7 +377,6 @@
             startTop = parseFloat(mockupContainer.style.top);
         });
 
-        // Click outside to deselect
         frame.addEventListener('mousedown', (e) => {
             if (e.target === frame || e.target === dropZone || e.target.tagName === 'P') {
                 mockupContainer.classList.remove('selected');
@@ -375,7 +401,6 @@
             const containerWidth = mockupContainer.offsetWidth;
             const containerHeight = mockupContainer.offsetHeight;
             
-            // Snap to center
             const snapThreshold = 10;
             const centerX = (frameSize - containerWidth) / 2;
             const centerY = (frameSize - containerHeight) / 2;
@@ -397,12 +422,13 @@
                 snapH.classList.add('active');
             }
 
-            // Constrain to frame - allow dragging outside to show partial view
             newLeft = Math.max(-containerWidth, Math.min(newLeft, frameSize));
             newTop = Math.max(-containerHeight, Math.min(newTop, frameSize));
 
             mockupContainer.style.left = newLeft + 'px';
             mockupContainer.style.top = newTop + 'px';
+
+            syncShadowFrame();
 
             if (videoLoaded) {
                 syncVideoToMockup();
@@ -437,12 +463,13 @@
                 newTop = startTop + (startHeight - newHeight);
             }
 
-            // Constrain minimum size
             if (newWidth > 50 && newHeight > 50) {
                 mockupContainer.style.width = newWidth + 'px';
                 mockupContainer.style.height = newHeight + 'px';
                 mockupContainer.style.left = newLeft + 'px';
                 mockupContainer.style.top = newTop + 'px';
+
+                syncShadowFrame();
 
                 if (videoLoaded) {
                     syncVideoToMockup();
@@ -463,7 +490,6 @@
             }
         });
 
-        // Drag and drop video
         frame.addEventListener('dragover', (e) => {
             e.preventDefault();
             dropZone.classList.add('drag-over');
@@ -494,7 +520,6 @@
             }
         });
 
-        // Keyboard shortcut - R to restart video
         document.addEventListener('keydown', (e) => {
             if (e.key === 'r' || e.key === 'R') {
                 if (videoLoaded) {
@@ -507,14 +532,12 @@
             }
         });
 
-        // Copy position and scale
         copyBtn.addEventListener('click', () => {
             const containerLeft = parseFloat(mockupContainer.style.left) || 0;
             const containerTop = parseFloat(mockupContainer.style.top) || 0;
             const containerWidth = mockupContainer.offsetWidth || 0;
             const containerHeight = mockupContainer.offsetHeight || 0;
             
-            // Store as ratios of frame size
             const leftRatio = parseFloat((containerLeft / frameSize).toFixed(3));
             const topRatio = parseFloat((containerTop / frameSize).toFixed(3));
             const widthRatio = parseFloat((containerWidth / frameSize).toFixed(3));
@@ -528,12 +551,9 @@
                 heightRatio
             };
             
-            // Format for copying
             const copyText = `{ name: "${positionData.name}", leftRatio: ${leftRatio}, topRatio: ${topRatio}, widthRatio: ${widthRatio}, heightRatio: ${heightRatio} }`;
             
-            // Copy to clipboard
             navigator.clipboard.writeText(copyText).then(() => {
-                // Add to presets
                 presets.push(positionData);
                 
                 const option = document.createElement('option');
@@ -549,7 +569,6 @@
             });
         });
 
-        // Load preset
         presetSelect.addEventListener('change', (e) => {
             if (e.target.value === '') return;
             
@@ -564,6 +583,8 @@
             mockupContainer.style.top = newTop + 'px';
             mockupContainer.style.width = newWidth + 'px';
             mockupContainer.style.height = newHeight + 'px';
+            
+            syncShadowFrame();
             
             if (videoLoaded) {
                 syncVideoToMockup();
