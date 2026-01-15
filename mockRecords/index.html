@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mock Records</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        #frame {
+            width: min(90vmin, 1000px);
+            height: min(90vmin, 1000px);
+            background-color: #FAFAFA;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        #video {
+            position: absolute;
+            display: none;
+            object-fit: cover;
+        }
+
+        #mockupContainer {
+            position: absolute;
+            z-index: 10;
+            cursor: move;
+        }
+
+        #mockup {
+            width: 100%;
+            height: 100%;
+            display: block;
+            user-select: none;
+            pointer-events: none;
+        }
+
+        .resize-handle {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: #fff;
+            border: 2px solid #0066ff;
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 15;
+        }
+
+        #mockupContainer.selected .resize-handle {
+            opacity: 1;
+        }
+
+        #mockupContainer.selected {
+            outline: 2px solid #0066ff;
+            outline-offset: 0px;
+        }
+
+        #mockupContainer.resizing {
+            cursor: auto;
+        }
+
+        .resize-handle.nw { top: -6px; left: -6px; cursor: nw-resize; }
+        .resize-handle.ne { top: -6px; right: -6px; cursor: ne-resize; }
+        .resize-handle.sw { bottom: -6px; left: -6px; cursor: sw-resize; }
+        .resize-handle.se { bottom: -6px; right: -6px; cursor: se-resize; }
+
+        .snap-line {
+            position: absolute;
+            background-color: #00ff00;
+            z-index: 5;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.1s;
+        }
+
+        .snap-line.horizontal {
+            width: 100%;
+            height: 1px;
+            left: 0;
+        }
+
+        .snap-line.vertical {
+            height: 100%;
+            width: 1px;
+            top: 0;
+        }
+
+        .snap-line.active {
+            opacity: 0.7;
+        }
+
+        #dropZone {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        #dropZone.drag-over {
+            background: rgba(0,255,0,0.1);
+            border: 3px dashed #00ff00;
+        }
+
+        #dropZone p {
+            color: #999;
+            font-size: 18px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        #dropZone.drag-over p {
+            opacity: 1;
+        }
+
+        #controls {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.95);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        #controls button {
+            padding: 8px 16px;
+            background: #0066ff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        #controls button:hover {
+            background: #0052cc;
+        }
+
+        #controls select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        #controls label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: -5px;
+        }
+
+        .shortcut-hint {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+    <div class="shortcut-hint">Press R to restart video</div>
+
+    <div id="controls">
+        <button id="copyBtn">Copy Position & Scale</button>
+        <label>Load Preset:</label>
+        <select id="presetSelect">
+            <option value="">-- Select Preset --</option>
+        </select>
+    </div>
+
+    <div id="frame">
+        <div class="snap-line horizontal" id="snapH"></div>
+        <div class="snap-line vertical" id="snapV"></div>
+        
+        <div id="dropZone">
+            <p>Drop video file here</p>
+        </div>
+        
+        <video id="video"></video>
+        
+        <div id="mockupContainer">
+            <img id="mockup" src="mock.png" alt="Mockup">
+            <div class="resize-handle nw"></div>
+            <div class="resize-handle ne"></div>
+            <div class="resize-handle sw"></div>
+            <div class="resize-handle se"></div>
+        </div>
+    </div>
+
+    <script>
+        const frame = document.getElementById('frame');
+        const mockupContainer = document.getElementById('mockupContainer');
+        const mockup = document.getElementById('mockup');
+        const video = document.getElementById('video');
+        const snapH = document.getElementById('snapH');
+        const snapV = document.getElementById('snapV');
+        const dropZone = document.getElementById('dropZone');
+        const copyBtn = document.getElementById('copyBtn');
+        const presetSelect = document.getElementById('presetSelect');
+
+        let isDragging = false;
+        let isResizing = false;
+        let resizeHandle = null;
+        let startX = 0, startY = 0;
+        let startLeft = 0, startTop = 0;
+        let startWidth = 0, startHeight = 0;
+        let aspectRatio = 1;
+        let videoLoaded = false;
+        let frameSize = 0;
+
+        // Preset positions storage - using absolute pixel values relative to frame
+        const presets = [
+            { name: "Bottom Half", leftRatio: 0.153, topRatio: 0.026, widthRatio: 0.695, heightRatio: 1.369 }
+        ];
+
+        // Populate preset dropdown
+        function populatePresets() {
+            presets.forEach((preset, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = preset.name;
+                presetSelect.appendChild(option);
+            });
+        }
+
+        populatePresets();
+
+        function updateFrameSize() {
+            frameSize = frame.offsetWidth;
+        }
+
+        updateFrameSize();
+        window.addEventListener('resize', () => {
+            updateFrameSize();
+            fitMockupToFrame();
+        });
+
+        // Initialize mockup to fit frame
+        mockup.onload = function() {
+            aspectRatio = mockup.naturalWidth / mockup.naturalHeight;
+            fitMockupToFrame();
+        };
+
+        function fitMockupToFrame() {
+            // Calculate dimensions that fill the frame while maintaining aspect ratio
+            let containerWidth, containerHeight;
+            
+            if (aspectRatio >= 1) {
+                // Image is wider or square - fill by height
+                containerHeight = frameSize;
+                containerWidth = frameSize * aspectRatio;
+            } else {
+                // Image is taller - fill by width
+                containerWidth = frameSize;
+                containerHeight = frameSize / aspectRatio;
+            }
+            
+            // Reduce by 50%
+            containerWidth *= 0.5;
+            containerHeight *= 0.5;
+            
+            // Center the mockup in the frame
+            const left = (frameSize - containerWidth) / 2;
+            const top = (frameSize - containerHeight) / 2;
+            
+            mockupContainer.style.width = containerWidth + 'px';
+            mockupContainer.style.height = containerHeight + 'px';
+            mockupContainer.style.left = left + 'px';
+            mockupContainer.style.top = top + 'px';
+            
+            if (videoLoaded) {
+                syncVideoToMockup();
+            }
+        }
+
+        function syncVideoToMockup() {
+            const mockupRect = mockupContainer.getBoundingClientRect();
+            const frameRect = frame.getBoundingClientRect();
+            
+            // Calculate video dimensions based on mockup size
+            // Using the ratio from the example: 651.9/782.63 ≈ 0.833 for width, 1417.31/1542.09 ≈ 0.919 for height
+            const videoWidth = mockupRect.width * 0.833;
+            const videoHeight = mockupRect.height * 0.919;
+            
+            // Center the video within the mockup
+            const videoLeft = (mockupRect.left - frameRect.left) + (mockupRect.width - videoWidth) / 2;
+            const videoTop = (mockupRect.top - frameRect.top) + (mockupRect.height - videoHeight) / 2;
+            
+            video.style.left = videoLeft + 'px';
+            video.style.top = videoTop + 'px';
+            video.style.width = videoWidth + 'px';
+            video.style.height = videoHeight + 'px';
+            video.style.borderRadius = '20px';
+        }
+
+        // Handle resize handles
+        const resizeHandles = document.querySelectorAll('.resize-handle');
+        resizeHandles.forEach(handle => {
+            handle.addEventListener('mousedown', (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                
+                isResizing = true;
+                resizeHandle = handle;
+                mockupContainer.classList.add('selected', 'resizing');
+                
+                startX = e.clientX;
+                startY = e.clientY;
+                startLeft = parseFloat(mockupContainer.style.left);
+                startTop = parseFloat(mockupContainer.style.top);
+                startWidth = mockupContainer.offsetWidth;
+                startHeight = mockupContainer.offsetHeight;
+            });
+        });
+
+        // Handle dragging the container
+        mockupContainer.addEventListener('mousedown', (e) => {
+            if (e.target.classList.contains('resize-handle')) {
+                return;
+            }
+            
+            e.preventDefault();
+            isDragging = true;
+            mockupContainer.classList.add('selected');
+            
+            startX = e.clientX;
+            startY = e.clientY;
+            startLeft = parseFloat(mockupContainer.style.left);
+            startTop = parseFloat(mockupContainer.style.top);
+        });
+
+        // Click outside to deselect
+        frame.addEventListener('mousedown', (e) => {
+            if (e.target === frame || e.target === dropZone || e.target.tagName === 'P') {
+                mockupContainer.classList.remove('selected');
+            }
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (isResizing) {
+                handleResize(e);
+            } else if (isDragging) {
+                handleDrag(e);
+            }
+        });
+
+        function handleDrag(e) {
+            const deltaX = e.clientX - startX;
+            const deltaY = e.clientY - startY;
+            
+            let newLeft = startLeft + deltaX;
+            let newTop = startTop + deltaY;
+
+            const containerWidth = mockupContainer.offsetWidth;
+            const containerHeight = mockupContainer.offsetHeight;
+            
+            // Snap to center
+            const snapThreshold = 10;
+            const centerX = (frameSize - containerWidth) / 2;
+            const centerY = (frameSize - containerHeight) / 2;
+            const mockupCenterX = newLeft + containerWidth / 2;
+            const mockupCenterY = newTop + containerHeight / 2;
+
+            snapH.classList.remove('active');
+            snapV.classList.remove('active');
+
+            if (Math.abs(mockupCenterX - frameSize / 2) < snapThreshold) {
+                newLeft = centerX;
+                snapV.style.left = '50%';
+                snapV.classList.add('active');
+            }
+
+            if (Math.abs(mockupCenterY - frameSize / 2) < snapThreshold) {
+                newTop = centerY;
+                snapH.style.top = '50%';
+                snapH.classList.add('active');
+            }
+
+            // Constrain to frame - allow dragging outside to show partial view
+            newLeft = Math.max(-containerWidth, Math.min(newLeft, frameSize));
+            newTop = Math.max(-containerHeight, Math.min(newTop, frameSize));
+
+            mockupContainer.style.left = newLeft + 'px';
+            mockupContainer.style.top = newTop + 'px';
+
+            if (videoLoaded) {
+                syncVideoToMockup();
+            }
+        }
+
+        function handleResize(e) {
+            const deltaX = e.clientX - startX;
+            const deltaY = e.clientY - startY;
+
+            let newWidth, newHeight, newLeft, newTop;
+
+            if (resizeHandle.classList.contains('se')) {
+                newWidth = startWidth + deltaX;
+                newHeight = newWidth / aspectRatio;
+                newLeft = startLeft;
+                newTop = startTop;
+            } else if (resizeHandle.classList.contains('sw')) {
+                newWidth = startWidth - deltaX;
+                newHeight = newWidth / aspectRatio;
+                newLeft = startLeft + (startWidth - newWidth);
+                newTop = startTop;
+            } else if (resizeHandle.classList.contains('ne')) {
+                newWidth = startWidth + deltaX;
+                newHeight = newWidth / aspectRatio;
+                newLeft = startLeft;
+                newTop = startTop + (startHeight - newHeight);
+            } else if (resizeHandle.classList.contains('nw')) {
+                newWidth = startWidth - deltaX;
+                newHeight = newWidth / aspectRatio;
+                newLeft = startLeft + (startWidth - newWidth);
+                newTop = startTop + (startHeight - newHeight);
+            }
+
+            // Constrain minimum size
+            if (newWidth > 50 && newHeight > 50) {
+                mockupContainer.style.width = newWidth + 'px';
+                mockupContainer.style.height = newHeight + 'px';
+                mockupContainer.style.left = newLeft + 'px';
+                mockupContainer.style.top = newTop + 'px';
+
+                if (videoLoaded) {
+                    syncVideoToMockup();
+                }
+            }
+        }
+
+        document.addEventListener('mouseup', () => {
+            if (isDragging) {
+                isDragging = false;
+                snapH.classList.remove('active');
+                snapV.classList.remove('active');
+            }
+            if (isResizing) {
+                isResizing = false;
+                resizeHandle = null;
+                mockupContainer.classList.remove('resizing');
+            }
+        });
+
+        // Drag and drop video
+        frame.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('drag-over');
+        });
+
+        frame.addEventListener('dragleave', () => {
+            dropZone.classList.remove('drag-over');
+        });
+
+        frame.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('drag-over');
+            
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('video/')) {
+                const url = URL.createObjectURL(file);
+                video.src = url;
+                video.style.display = 'block';
+                videoLoaded = true;
+                
+                video.onloadedmetadata = () => {
+                    syncVideoToMockup();
+                    setTimeout(() => {
+                        video.currentTime = 0;
+                        video.play();
+                    }, 3000);
+                };
+            }
+        });
+
+        // Keyboard shortcut - R to restart video
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'r' || e.key === 'R') {
+                if (videoLoaded) {
+                    video.pause();
+                    video.currentTime = 0;
+                    setTimeout(() => {
+                        video.play();
+                    }, 3000);
+                }
+            }
+        });
+
+        // Copy position and scale
+        copyBtn.addEventListener('click', () => {
+            const containerLeft = parseFloat(mockupContainer.style.left) || 0;
+            const containerTop = parseFloat(mockupContainer.style.top) || 0;
+            const containerWidth = mockupContainer.offsetWidth || 0;
+            const containerHeight = mockupContainer.offsetHeight || 0;
+            
+            // Store as ratios of frame size
+            const leftRatio = parseFloat((containerLeft / frameSize).toFixed(3));
+            const topRatio = parseFloat((containerTop / frameSize).toFixed(3));
+            const widthRatio = parseFloat((containerWidth / frameSize).toFixed(3));
+            const heightRatio = parseFloat((containerHeight / frameSize).toFixed(3));
+            
+            const positionData = {
+                name: `Custom ${new Date().toLocaleTimeString()}`,
+                leftRatio,
+                topRatio,
+                widthRatio,
+                heightRatio
+            };
+            
+            presets.push(positionData);
+            
+            const option = document.createElement('option');
+            option.value = presets.length - 1;
+            option.textContent = positionData.name;
+            presetSelect.appendChild(option);
+            
+            console.log('Saved position:', positionData);
+            alert(`Position & Scale copied!\n\nLeft: ${leftRatio}\nTop: ${topRatio}\nWidth: ${widthRatio}\nHeight: ${heightRatio}`);
+        });
+
+        // Load preset
+        presetSelect.addEventListener('change', (e) => {
+            if (e.target.value === '') return;
+            
+            const preset = presets[e.target.value];
+            
+            const newLeft = preset.leftRatio * frameSize;
+            const newTop = preset.topRatio * frameSize;
+            const newWidth = preset.widthRatio * frameSize;
+            const newHeight = preset.heightRatio * frameSize;
+            
+            mockupContainer.style.left = newLeft + 'px';
+            mockupContainer.style.top = newTop + 'px';
+            mockupContainer.style.width = newWidth + 'px';
+            mockupContainer.style.height = newHeight + 'px';
+            
+            if (videoLoaded) {
+                syncVideoToMockup();
+            }
+            
+            presetSelect.value = '';
+        });
+    </script>
+</body>
+</html>
