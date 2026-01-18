@@ -33,9 +33,21 @@
         #shadowFrame {
             position: absolute;
             background-color: #000;
-            box-shadow: 0 4px 40px 8px rgba(0, 0, 0, 0.32), 0 0 0 0.5px rgba(0, 0, 0, 0.64);
             z-index: 8;
             pointer-events: none;
+        }
+
+        .shadow-light {
+            box-shadow: 0 4px 40px 8px rgba(0, 0, 0, 0.32), 0 0 0 0.5px rgba(0, 0, 0, 0.64);
+        }
+
+        .shadow-medium {
+            box-shadow: 0 100px 161px 0 rgba(0, 0, 0, 0.14),
+                        0 64.815px 94.289px 0 rgba(0, 0, 0, 0.11),
+                        0 38.519px 51.281px 0 rgba(0, 0, 0, 0.09),
+                        0 20px 26.163px 0 rgba(0, 0, 0, 0.07),
+                        0 8.148px 13.119px 0 rgba(0, 0, 0, 0.05),
+                        0 1.852px 6.336px 0 rgba(0, 0, 0, 0.03);
         }
 
         #video {
@@ -193,7 +205,11 @@
             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
         </svg>
         <select class="preset-dropdown" id="presetSelect">
-            <option value="">-- Select Preset --</option>
+            <option value="default">Default</option>
+        </select>
+        <select class="preset-dropdown" id="shadowSelect">
+            <option value="shadow-light">Shadow: Light</option>
+            <option value="shadow-medium">Shadow: Medium</option>
         </select>
     </div>
 
@@ -205,7 +221,7 @@
             <p>Drop video file here</p>
         </div>
         
-        <div id="shadowFrame"></div>
+        <div id="shadowFrame" class="shadow-light"></div>
         <video id="video"></video>
         
         <div id="mockupContainer">
@@ -228,6 +244,8 @@
         const dropZone = document.getElementById('dropZone');
         const copyBtn = document.getElementById('copyBtn');
         const presetSelect = document.getElementById('presetSelect');
+        const shadowSelect = document.getElementById('shadowSelect');
+        const DEFAULT_PRESET_VALUE = 'default';
 
         let isDragging = false;
         let isResizing = false;
@@ -570,9 +588,17 @@
         });
 
         presetSelect.addEventListener('change', (e) => {
-            if (e.target.value === '') return;
-            
-            const preset = presets[e.target.value];
+            const { value } = e.target;
+            if (!value) return;
+
+            if (value === DEFAULT_PRESET_VALUE) {
+                fitMockupToFrame();
+                return;
+            }
+
+            const presetIndex = parseInt(value, 10);
+            const preset = presets[presetIndex];
+            if (!preset) return;
             
             const newLeft = preset.leftRatio * frameSize;
             const newTop = preset.topRatio * frameSize;
@@ -589,9 +615,18 @@
             if (videoLoaded) {
                 syncVideoToMockup();
             }
-            
-            presetSelect.value = '';
         });
+
+        function setShadowDepth(shadowType) {
+            shadowFrame.classList.remove('shadow-light', 'shadow-medium');
+            shadowFrame.classList.add(shadowType);
+        }
+
+        shadowSelect.addEventListener('change', (e) => {
+            setShadowDepth(e.target.value);
+        });
+
+        setShadowDepth(shadowSelect.value);
     </script>
 </body>
 </html>
