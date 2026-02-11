@@ -1,0 +1,665 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+    background: #fff;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden; /* prevent page-level scroll; sheet area handles scrolling */
+}
+
+/* Prevent native text selection inside the grid (Sheets-like) */
+.sheet-wrapper, .sheet-container, .sheet, .cell, .cell-content, .col-header, .row-header {
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.header {
+    background: #f8f9fa;
+    color: #111;
+    padding: 12px 24px;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.header h1 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 0;
+    letter-spacing: 0.4px;
+}
+
+.header-logo-group {
+    display: flex;
+    gap: 2.4px;
+    align-items: center;
+}
+
+.header-logo {
+    width: auto;
+    height: 38px;
+    object-fit: contain;
+    flex: 0 0 auto;
+    cursor: pointer;
+    transition: transform 0.2s ease-out;
+}
+
+.header-logo:active {
+    transform: scale(0.94) translateY(2px);
+    transition: transform 0.1s ease-out;
+}
+
+.header-logo.tapped {
+    animation: keyTap 0.5s ease-out;
+}
+
+@keyframes keyTap {
+    0% {
+        transform: scale(1) translateY(0);
+    }
+    30% {
+        transform: scale(0.92) translateY(2px);
+    }
+    60% {
+        transform: scale(1.01) translateY(0);
+    }
+    100% {
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* Floating fire easter egg */
+.floating-fire {
+    position: fixed;
+    bottom: 20px;
+    width: 60px;
+    height: auto;
+    pointer-events: none;
+    z-index: 9999;
+    animation: floatUp 2.5s ease-out forwards;
+}
+
+@keyframes floatUp {
+    0% {
+        opacity: 1;
+        transform: translateY(0) scale(0.8);
+    }
+    30% {
+        opacity: 1;
+        transform: translateY(-150px) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-500px) scale(0.6);
+    }
+}
+
+.header-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    font-family: ui-serif, Georgia, "Times New Roman", Times, serif;
+    font-weight: 400;
+    letter-spacing: 0.2px;
+}
+
+.header-title .title-pill {
+    background: #eeeeee;
+    border: 1px solid #e0e0e0;
+    padding: 4px 10px;
+    border-radius: 6px;
+    display: inline-block;
+    line-height: 1;
+    font-size: 16px;
+    font-style: italic;
+    font-weight: 400;
+    box-shadow: -0.893px -0.893px 0.446px -0.446px rgba(0, 0, 0, 0.25) inset, -1.785px -1.785px 9.015px -3.57px rgba(0, 0, 0, 0.15) inset, 0.893px 0.893px 0.089px -0.446px rgba(255, 250, 248, 0.47) inset, 8.926px 8.033px 8.212px -5.355px rgba(255, 255, 255, 0.65) inset;
+    letter-spacing: -0.4px;
+}
+
+.header p {
+    font-size: 13px;
+    opacity: 1;
+    color: #444;
+    background: #eeeeee;
+    border: 1px solid #e0e0e0;
+    padding: 4px 6px;
+    border-radius: 6px;
+    display: inline-block;
+}
+
+.toolbar {
+    padding: 12px 24px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.generate-btn {
+    background: #000;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    font-size: 13px;
+    cursor: pointer;
+    border-radius: 2px;
+    font-weight: 500;
+    margin-left: 4px;
+}
+
+.howto-wrapper {
+    position: relative;
+    display: inline-block;
+    margin-left: auto; /* push to the right edge of the toolbar */
+}
+
+.howto-btn {
+    background: transparent;
+    color: #111;
+    border: 1px solid #d0d0d0;
+    padding: 8px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    border-radius: 2px;
+    font-weight: 500;
+}
+
+.howto-btn:hover {
+    background: #f0f0f0;
+}
+
+.howto-popover {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    left: auto;
+    width: 420px;
+    max-width: min(420px, calc(100vw - 48px));
+    background: #fff;
+    background: linear-gradient(180deg, #0087FF 26%, #DFEDF7 117.72%);
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 12px 28px rgba(0,0,0,0.12);
+    padding: 12px 14px;
+    z-index: 50;
+    overflow: hidden;
+    
+    /* Morphing animation - initial state */
+    opacity: 0;
+    transform: scale(0.92) translateY(-8px);
+    transform-origin: top right;
+    filter: blur(4px);
+    pointer-events: none;
+    visibility: hidden;
+    
+    /* Smooth transition */
+    transition: 
+        opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+        transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+        filter 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+        visibility 0s 0.3s;
+}
+
+.howto-popover::after {
+    content: '';
+    position: absolute;
+    bottom: -50px;
+    left: 0;
+    right: -150px;
+    height: 200px;
+    background-image: url('assets/pink-fire.png');
+    background-repeat: no-repeat;
+    background-position: bottom right;
+    background-size: auto 200px;
+    pointer-events: none;
+    z-index: -10;
+}
+
+.howto-popover.open {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    filter: blur(0);
+    pointer-events: auto;
+    visibility: visible;
+    transition: 
+        opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+        transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+        filter 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+        visibility 0s 0s;
+}
+
+.howto-title {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: #fff;
+    background: linear-gradient(180deg, #EFFCE3 0%, #6FE601 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    -webkit-text-stroke-width: 0.5px;
+    -webkit-text-stroke-color: #000;
+}
+
+.howto-steps {
+    font-size: 13px;
+    color: #fff;
+    line-height: 1.45;
+}
+
+.howto-steps ol {
+    margin-left: 18px;
+}
+
+.howto-steps li {
+    margin: 10px 44px 10px 4px;
+}
+
+.generate-btn:hover {
+    background: #333;
+}
+
+.generate-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+.api-key-container {
+    display: inline-block;
+    margin-right: 16px;
+}
+
+.provider-picker {
+    display: inline-flex;
+    align-items: center;
+}
+
+.provider-select {
+    max-width: 140px;
+}
+
+.provider-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.provider-group.is-hidden {
+    display: none;
+}
+
+.model-picker {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.model-select {
+    padding: 8px 10px;
+    padding-right: 32px;
+    font-size: 13px;
+    border: 1px solid #ccc;
+    border-radius: 2px;
+    background: #fff;
+    color: #111;
+    max-width: 190px;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 20 20'%3E%3Cpath fill='%23666' d='M5.5 7.5L10 12l4.5-4.5 1.4 1.4L10 14.8 4.1 8.9z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 12px 12px;
+}
+
+.model-select:focus,
+.model-select:focus-visible {
+    outline: none;
+    box-shadow: none;
+}
+
+.model-input {
+    width: 240px;
+}
+
+.model-input.is-hidden {
+    display: none;
+}
+
+.api-key-input-wide {
+    width: 260px;
+}
+
+.api-key-input {
+    padding: 8px 12px;
+    font-size: 13px;
+    border: 1px solid #ccc;
+    border-radius: 2px;
+    width: 250px;
+}
+
+.sheet-wrapper {
+    overflow: auto;
+    flex: 1 1 auto;
+    min-height: 0; /* required for flex children to allow internal scrolling without page scroll */
+}
+
+/* Custom scrollbar styling - horizontal scrollbar starts after row headers */
+.sheet-wrapper::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+}
+
+.sheet-wrapper::-webkit-scrollbar-track:horizontal {
+    margin-left: 50px; /* Start scrollbar after row header column */
+}
+
+.sheet-wrapper::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 6px;
+    border: 3px solid transparent;
+    background-clip: padding-box;
+}
+
+.sheet-wrapper::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+    background-clip: padding-box;
+}
+
+.sheet-container {
+    display: inline-block;
+    min-width: 100%;
+    position: relative; /* for range outline overlay */
+}
+
+.sheet {
+    display: grid;
+    grid-template-columns: 50px repeat(26, 150px);
+    grid-auto-rows: minmax(32px, auto); /* Min 32px, grow with content */
+    background: #fff;
+}
+
+.cell {
+    border-right: 1px solid #e0e0e0;
+    border-bottom: 1px solid #e0e0e0;
+    min-height: 32px;
+    position: relative;
+    background: #fff;
+    align-self: stretch; /* Fill the grid row height */
+}
+
+.cell.corner {
+    background: #f8f9fa;
+    border-right: 1px solid #c0c0c0;
+    border-bottom: 1px solid #c0c0c0;
+    position: sticky;
+    top: 0;
+    left: 0;
+    z-index: 12; /* Highest - above everything when sticky */
+}
+
+.cell.col-header {
+    background: #f8f9fa;
+    border-bottom: 1px solid #c0c0c0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: sticky;
+    top: 0;
+    z-index: 11; /* Above focused cells and outlines when sticky */
+    font-size: 13px;
+    font-weight: 500;
+    color: #444;
+    padding: 0 8px;
+    cursor: pointer;
+}
+
+.cell.col-header:hover {
+    background: #f0f1f2;
+}
+
+.cell.row-header {
+    background: #f8f9fa;
+    border-right: 1px solid #c0c0c0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: sticky;
+    left: 0;
+    z-index: 10; /* Above focused cells and outlines when sticky */
+    font-size: 13px;
+    color: #444;
+    cursor: pointer;
+}
+
+.cell.row-header:hover {
+    background: #f0f1f2;
+}
+
+.cell.data-cell {
+    padding: 0;
+    cursor: default;
+    display: flex;
+    align-items: stretch;
+}
+
+.cell.data-cell:hover {
+    z-index: 1;
+}
+
+.cell.data-cell.focused {
+    /* selection border like Sheets */
+    box-shadow: inset 0 0 0 2px #1a73e8;
+    /* hide gridline borders under the selection border to avoid “double border” */
+    border-right-color: transparent;
+    border-bottom-color: transparent;
+    z-index: 2;
+}
+
+.cell.data-cell.tone-header {
+    background: #f8f9fa;
+    font-weight: 500;
+}
+
+.cell-input {
+    width: 100%;
+    height: 100%;
+    border: none;
+    padding: 8px;
+    font-size: 13px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+    resize: none;
+    outline: none;
+    background: transparent;
+    line-height: 1.4;
+    display: none; /* shown only while editing */
+    -webkit-user-select: text;
+    user-select: text;
+    align-self: center; /* vertically center the editor box within the cell */
+}
+
+.cell.data-cell.editing {
+    cursor: text;
+}
+
+.cell.data-cell.editing .cell-input {
+    display: block;
+    height: auto;              /* hug content while editing */
+    min-height: 100%;
+    overflow: hidden;          /* no internal scrollbar; row grows instead */
+}
+
+.cell.data-cell.editing .cell-content {
+    display: none;
+}
+
+.cell-content {
+    padding: 8px;
+    font-size: 13px;
+    line-height: 1.4;
+    height: 100%;
+    color: #444;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    cursor: default;
+    display: flex;
+    align-items: center; /* vertically center display text */
+}
+
+.cell-content.generating {
+    font-style: italic;
+    background: linear-gradient(
+        90deg,
+        #888 0%,
+        #888 30%,
+        #b8e6a0 40%,
+        #6FE601 50%,
+        #b8e6a0 60%,
+        #888 70%,
+        #888 100%
+    );
+    background-size: 300% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: 
+        shimmerEntrance 0.2s ease-out forwards,
+        shimmer 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    letter-spacing: 0.02em;
+}
+
+@keyframes shimmerEntrance {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: 100% 0;
+    }
+    100% {
+        background-position: -100% 0;
+    }
+}
+
+.fill-handle {
+    position: absolute;
+    bottom: -3px;
+    right: -3px;
+    width: 8px;
+    height: 8px;
+    background: #1a73e8;
+    border: 0;
+    border-radius: 999px;
+    cursor: crosshair;
+    z-index: 10;
+    display: none;
+}
+
+.cell.data-cell.focused .fill-handle {
+    display: block;
+}
+
+.fill-preview {
+    /* range selection preview (subtle fill + border) */
+    background: rgba(26, 115, 232, 0.08) !important;
+    /* border is drawn by the overlay so it stays continuous */
+}
+
+.range-selected {
+    background: rgba(26, 115, 232, 0.08) !important;
+}
+
+.range-outline {
+    position: absolute;
+    pointer-events: none;
+    z-index: 6;
+    border: 1px solid rgba(26, 115, 232, 0.95); /* thinner than focused cell */
+    border-radius: 1px;
+    display: none;
+    box-sizing: border-box;
+}
+
+.range-outline.dragging {
+    border-style: dashed;
+}
+
+.range-outline.final {
+    border-style: solid;
+}
+
+/* While dragging, show ONLY the origin cell's fill-handle (dot stays on the cell itself) */
+body.is-dragging-range .fill-handle {
+    display: none !important;
+}
+body.is-dragging-range .cell.data-cell.drag-origin .fill-handle {
+    display: block !important;
+}
+
+/* ===== Sheet Tabs Bar (Google Sheets style) ===== */
+.sheet-tabs-bar {
+    background: #f8f9fa;
+    border-top: 1px solid #e0e0e0;
+    padding: 0 12px;
+    padding-left: 49px; /* Align with grid content (past row numbers column) */
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+}
+
+.sheet-tabs {
+    display: flex;
+    gap: 0;
+    align-items: center;
+}
+
+.sheet-tab {
+    background: transparent;
+    border: none;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-family: inherit;
+    color: #5f6368;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+
+.sheet-tab:hover {
+    background: #e8eaed;
+    color: #202124;
+}
+
+.sheet-tab.active {
+    background: #cedffd; /* Light blue like Google Sheets */
+    color: #1a73e8;
+    font-weight: 500;
+}
+
+/* Hide inactive sheets */
+.sheet.is-hidden {
+    display: none !important;
+}
+
+/* Hide inactive how-to content */
+.howto-content.is-hidden {
+    display: none !important;
+}

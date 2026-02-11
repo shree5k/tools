@@ -1,0 +1,364 @@
+{
+  "meta": {
+    "name": "OTT Platform UX Copy Guide",
+    "version": "1.0",
+    "description": "A comprehensive prompt guide for generating world-class UX copy for streaming/OTT platforms. Designed for use with AI copy generators."
+  },
+
+  "brand_voice": {
+    "core_principles": [
+      "Clarity over cleverness — users should never have to re-read",
+      "Warmth without fluff — friendly but efficient",
+      "Confidence without arrogance — we know what we're doing, but we're not showing off",
+      "Helpful, not instructional — guide, don't lecture"
+    ],
+    "personality_traits": [
+      "Approachable: Like a knowledgeable friend who loves movies",
+      "Effortless: Makes streaming feel simple, not technical",
+      "Inclusive: Speaks to everyone, no jargon or gatekeeping",
+      "Delightful: Adds moments of joy without trying too hard"
+    ],
+    "voice_spectrum": {
+      "formal": 2,
+      "casual": 8,
+      "playful": 6,
+      "serious": 4,
+      "note": "Scale of 1-10. We lean casual and warm, with room for playfulness in the right moments."
+    }
+  },
+
+  "tone_variations": {
+    "default": {
+      "name": "Neutral Helpful",
+      "description": "Clear, warm, gets the job done",
+      "use_when": "Most UI interactions, settings, navigation",
+      "example": "Your download is ready to watch offline."
+    },
+    "celebratory": {
+      "name": "Celebratory",
+      "description": "Excited but not over-the-top",
+      "use_when": "Successful actions, milestones, welcome moments",
+      "example": "You're all set! Time to find something great to watch."
+    },
+    "reassuring": {
+      "name": "Reassuring",
+      "description": "Calm, confident, supportive",
+      "use_when": "Errors, payment issues, account problems",
+      "example": "No worries — we saved your spot. Pick up where you left off anytime."
+    },
+    "urgent": {
+      "name": "Urgent (Soft)",
+      "description": "Creates gentle momentum without pressure",
+      "use_when": "Expiring content, trial endings, limited offers",
+      "example": "Heads up — this title leaves in 3 days."
+    },
+    "playful": {
+      "name": "Playful",
+      "description": "Light, witty, adds personality",
+      "use_when": "Empty states, easter eggs, casual moments",
+      "example": "Nothing here yet. Your watchlist is waiting to be filled."
+    }
+  },
+
+  "copy_categories": {
+    "navigation_and_wayfinding": {
+      "description": "Labels, tabs, menus — the signposts of the app",
+      "principles": [
+        "Use nouns, not verbs (Home, not Go Home)",
+        "Keep labels to 1-2 words max",
+        "Be specific: 'Continue Watching' not 'Resume'"
+      ],
+      "examples": {
+        "good": ["Home", "Search", "My List", "Downloads", "Continue Watching"],
+        "avoid": ["Go to Home", "Search for Content", "Your Saved Items"]
+      }
+    },
+
+    "buttons_and_ctas": {
+      "description": "Action triggers — the verbs of the interface",
+      "principles": [
+        "Start with a verb",
+        "Be specific about the outcome",
+        "Front-load the action word",
+        "Keep it to 2-3 words"
+      ],
+      "examples": {
+        "primary_actions": {
+          "play": ["Play", "Watch Now", "Resume", "Start Watching"],
+          "subscribe": ["Start Free Trial", "Subscribe", "Get Started", "Join Now"],
+          "save": ["Add to My List", "Save", "Download"]
+        },
+        "secondary_actions": {
+          "info": ["More Info", "Details", "See All"],
+          "share": ["Share", "Send to Friend"],
+          "manage": ["Manage", "Edit", "Change"]
+        }
+      },
+      "avoid": ["Click Here", "Submit", "Proceed", "Continue to Next Step"]
+    },
+
+    "empty_states": {
+      "description": "When there's nothing to show — opportunity for personality",
+      "principles": [
+        "Acknowledge the emptiness briefly",
+        "Guide toward an action",
+        "Add a touch of warmth or wit (but don't overdo it)"
+      ],
+      "examples": {
+        "no_downloads": {
+          "headline": "No downloads yet",
+          "body": "Save shows and movies to watch offline — perfect for flights, commutes, or anywhere without WiFi.",
+          "cta": "Browse Downloads"
+        },
+        "empty_watchlist": {
+          "headline": "Your list is empty",
+          "body": "Tap the + on any title to save it here for later.",
+          "cta": "Explore"
+        },
+        "no_search_results": {
+          "headline": "No results for \"{query}\"",
+          "body": "Try a different spelling, or browse by genre.",
+          "cta": "Browse All"
+        },
+        "watch_history_empty": {
+          "headline": "Nothing here yet",
+          "body": "Start watching and we'll keep track for you.",
+          "cta": "Start Exploring"
+        }
+      }
+    },
+
+    "error_messages": {
+      "description": "When things go wrong — be helpful, not robotic",
+      "principles": [
+        "Never blame the user",
+        "Explain what happened in plain language",
+        "Offer a clear next step",
+        "Apologize only when it's our fault"
+      ],
+      "examples": {
+        "network_error": {
+          "headline": "Connection lost",
+          "body": "Check your internet and try again.",
+          "cta": "Retry"
+        },
+        "playback_error": {
+          "headline": "Trouble playing this title",
+          "body": "Give it another go. If it keeps happening, try restarting the app.",
+          "cta": "Try Again"
+        },
+        "payment_failed": {
+          "headline": "Payment didn't go through",
+          "body": "Your card might have expired or been declined. Update your payment info to continue.",
+          "cta": "Update Payment"
+        },
+        "content_unavailable": {
+          "headline": "This title isn't available",
+          "body": "It may have been removed or isn't available in your region.",
+          "cta": "Browse Similar"
+        },
+        "generic_error": {
+          "headline": "Something went wrong",
+          "body": "We're on it. Try again in a moment.",
+          "cta": "Retry"
+        }
+      },
+      "avoid": [
+        "Error 500: Internal Server Error",
+        "An unknown error has occurred",
+        "Request failed. Please try again later.",
+        "Oops! Something broke!"
+      ]
+    },
+
+    "onboarding_and_signup": {
+      "description": "First impressions — welcoming, efficient, trustworthy",
+      "principles": [
+        "Reduce friction with every word",
+        "Set expectations clearly",
+        "Make each step feel quick"
+      ],
+      "examples": {
+        "welcome_screen": {
+          "headline": "Endless entertainment awaits",
+          "body": "Stream thousands of movies, shows, and originals — anytime, anywhere.",
+          "cta": "Get Started"
+        },
+        "create_account": {
+          "headline": "Create your account",
+          "body": "Just a few details and you're in.",
+          "fields": {
+            "email": "Email",
+            "password": "Password (at least 8 characters)"
+          },
+          "cta": "Continue"
+        },
+        "choose_plan": {
+          "headline": "Pick your plan",
+          "body": "Change or cancel anytime. No commitments.",
+          "cta": "Start Free Trial"
+        },
+        "profile_setup": {
+          "headline": "Who's watching?",
+          "body": "Create profiles for everyone in your household.",
+          "cta": "Add Profile"
+        }
+      }
+    },
+
+    "notifications_and_alerts": {
+      "description": "Interruptions that earn attention — be worth the distraction",
+      "principles": [
+        "Lead with the value or news",
+        "Be scannable — key info first",
+        "One message, one purpose"
+      ],
+      "examples": {
+        "new_episode": {
+          "title": "New Episode Available",
+          "body": "Season 2, Episode 5 of {Show Name} is ready."
+        },
+        "download_complete": {
+          "title": "Download Complete",
+          "body": "{Movie Name} is ready to watch offline."
+        },
+        "trial_ending": {
+          "title": "3 days left on your trial",
+          "body": "Subscribe now to keep watching without interruption."
+        },
+        "content_expiring": {
+          "title": "Leaving soon: {Movie Name}",
+          "body": "Watch before it's gone on {date}."
+        }
+      }
+    },
+
+    "settings_and_preferences": {
+      "description": "Control and customization — clear, unambiguous, scannable",
+      "principles": [
+        "Use plain language, not tech jargon",
+        "Explain what each setting does if not obvious",
+        "Group related settings logically"
+      ],
+      "examples": {
+        "labels": {
+          "autoplay": "Autoplay next episode",
+          "autoplay_description": "Automatically play the next episode when one ends.",
+          "data_saver": "Data Saver",
+          "data_saver_description": "Reduce data usage by streaming in lower quality.",
+          "download_quality": "Download Quality",
+          "download_options": ["Standard (uses less storage)", "High (best picture)"],
+          "notifications": "Push Notifications",
+          "notifications_description": "Get updates about new releases and recommendations."
+        }
+      }
+    },
+
+    "loading_and_progress": {
+      "description": "Waiting moments — acknowledge and reassure",
+      "principles": [
+        "Avoid generic 'Loading...' when possible",
+        "Add context if the wait is meaningful",
+        "Keep it brief"
+      ],
+      "examples": {
+        "generic": "Loading...",
+        "content_loading": "Getting your show ready...",
+        "search_loading": "Searching...",
+        "personalization": "Finding recommendations for you...",
+        "download_progress": "Downloading... {percent}%",
+        "buffering": "Buffering..."
+      }
+    },
+
+    "confirmation_and_success": {
+      "description": "Validation moments — brief celebration, then move on",
+      "principles": [
+        "Confirm the action was successful",
+        "Keep it short — don't over-celebrate",
+        "Offer a next step if relevant"
+      ],
+      "examples": {
+        "added_to_list": "Added to My List",
+        "removed_from_list": "Removed from My List",
+        "download_started": "Downloading...",
+        "profile_created": "Profile created",
+        "settings_saved": "Settings saved",
+        "subscription_confirmed": {
+          "headline": "You're all set!",
+          "body": "Your subscription is active. Start exploring.",
+          "cta": "Start Watching"
+        }
+      }
+    }
+  },
+
+  "writing_rules": {
+    "do": [
+      "Use contractions (you're, it's, we'll) — sounds more natural",
+      "Use 'you' and 'your' — speak directly to the user",
+      "Use sentence case for headlines and buttons",
+      "Write in present tense",
+      "Use active voice",
+      "Keep sentences under 20 words",
+      "Test copy by reading it aloud",
+      "Consider the user's emotional state in each context"
+    ],
+    "dont": [
+      "Use ALL CAPS (except for brand acronyms)",
+      "Use exclamation marks excessively (one per screen max)",
+      "Use jargon: buffer, cache, bandwidth, render",
+      "Use filler phrases: 'In order to', 'Please note that', 'It should be noted'",
+      "Use passive voice: 'Your password has been changed' → 'Password changed'",
+      "Use double negatives",
+      "Be overly apologetic for minor issues",
+      "Use 'please' in buttons (it's implied)"
+    ]
+  },
+
+  "word_choices": {
+    "prefer": {
+      "use": "Watch",
+      "not": "View, Play Content"
+    },
+    "pairs": [
+      { "prefer": "show", "avoid": "program, series, content" },
+      { "prefer": "movie", "avoid": "film, feature, title" },
+      { "prefer": "episode", "avoid": "installment, chapter" },
+      { "prefer": "search", "avoid": "find, look up, query" },
+      { "prefer": "home", "avoid": "main, landing, dashboard" },
+      { "prefer": "account", "avoid": "profile, user settings" },
+      { "prefer": "sign in", "avoid": "log in, login" },
+      { "prefer": "sign out", "avoid": "log out, logout" },
+      { "prefer": "free trial", "avoid": "trial period, trial membership" },
+      { "prefer": "subscription", "avoid": "membership, plan, package" }
+    ]
+  },
+
+  "prompt_templates": {
+    "general_rewrite": "Rewrite this UX copy for an OTT streaming platform. Make it clear, warm, and helpful. Use a {tone} tone:\n\n{input_text}\n\nReturn only the rewritten text.",
+    
+    "button_copy": "Write a button label for this action on a streaming app: {action_description}\n\nRequirements:\n- Start with a verb\n- Maximum 3 words\n- Clear and specific\n\nReturn only the button text.",
+    
+    "error_message": "Write an error message for this situation on a streaming app: {error_situation}\n\nInclude:\n- A short headline (3-5 words)\n- A brief explanation (1 sentence)\n- A clear next step\n\nTone: Reassuring, not alarming. Never blame the user.\n\nFormat as JSON with keys: headline, body, cta",
+    
+    "empty_state": "Write an empty state message for this screen in a streaming app: {screen_description}\n\nInclude:\n- A headline acknowledging the empty state\n- A brief body explaining what goes here and how to fill it\n- A CTA button label\n\nTone: Helpful with a touch of warmth.\n\nFormat as JSON with keys: headline, body, cta",
+    
+    "notification": "Write a push notification for: {notification_purpose}\n\nRequirements:\n- Title: max 6 words, lead with value\n- Body: max 15 words, scannable\n\nFormat as JSON with keys: title, body",
+    
+    "onboarding_step": "Write copy for this onboarding step in a streaming app: {step_description}\n\nInclude:\n- Headline: welcoming, clear\n- Body: 1-2 sentences max, reduce friction\n- CTA: action-oriented button label\n\nFormat as JSON with keys: headline, body, cta"
+  },
+
+  "quality_checklist": {
+    "before_shipping": [
+      "Is it clear on first read?",
+      "Is it as short as it can be without losing meaning?",
+      "Does it tell users what to do next?",
+      "Does it match the emotional context?",
+      "Would you say this to a friend?",
+      "Does it avoid jargon and tech-speak?",
+      "Is it consistent with our word choices?",
+      "Does it work for first-time and returning users?"
+    ]
+  }
+}

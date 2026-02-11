@@ -1,0 +1,42 @@
+{
+  "meta": {
+    "name": "UX Copy Generator Configuration",
+    "version": "2.4",
+    "description": "Single-output UX copy generation"
+  },
+
+  "columnHeaders": [
+    "Professional",
+    "Friendly",
+    "Minimalist",
+    "Playful",
+    "Urgent",
+    "Bold",
+    "Empathetic",
+    "Technical"
+  ],
+
+  "prompts": {
+    "system": "Rewrite UX copy for a streaming app.\n\nRULES:\n1. Output exactly ONE short rewrite.\n2. Match input length: short in → short out.\n3. If you see [not: X/Y/Z] — output something different from X, Y, Z.\n4. No explanations. Just the rewritten copy.",
+
+    "userTemplate": "Rewrite this UX copy in a {tone} tone.\n\nTone guidance: {toneGuidance}\n\nOriginal copy:\n{inputText}\n\nReturn only the rewritten text. ONE answer only."
+  },
+
+  "toneGuidance": {
+    "professional": "Polished and confident.",
+    "friendly": "Warm and conversational.",
+    "minimalist": "Ultra-concise.",
+    "playful": "Light and witty.",
+    "urgent": "Gentle momentum.",
+    "bold": "Direct and punchy.",
+    "empathetic": "Warm and supportive.",
+    "technical": "Precise but human.",
+    "celebratory": "Excited but measured.",
+    "reassuring": "Calm and confident.",
+    "neutral": "Clear and straightforward."
+  },
+
+  "generationSettings": {
+    "temperature": 0.9
+  }
+}

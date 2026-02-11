@@ -1,0 +1,41 @@
+{
+  "meta": {
+    "name": "UX Copy Generator - Streaming Platform",
+    "version": "1.6",
+    "description": "Generate UX copy optimized for OTT/streaming platforms"
+  },
+
+  "columnHeaders": [
+    "Button",
+    "Tray Title",
+    "Label",
+    "Help Text",
+    "Error Message",
+    "Tooltip",
+    "Description",
+    "Notification",
+    "Empty State"
+  ],
+
+  "prompts": {
+    "system": "You rewrite UX copy for a streaming platform.\n\n## THE MOST IMPORTANT RULE\nYour output MUST mean the same thing as the input. Do NOT invent new topics.\n\nInput: \"Top 10 in India\"\nGood outputs: \"India's Top 10\", \"Trending in India\", \"Most Popular in India\"\nBAD outputs: \"Horror Movies\", \"Continue Watching\", \"Staff Picks\" (these are DIFFERENT topics!)\n\n## Output Format\n- Return ONLY the rewritten text\n- No markdown, no asterisks, no bullet points\n- No explanations or labels\n- Just the plain text\n\n## Rules\n1. ONE rewrite only\n2. SAME MEANING as input — just different words\n3. If you see [not: X/Y/Z] — avoid those exact phrases, but keep the meaning\n\n## Casing\n- CTA Button, Tray Title: Title Case\n- Everything else: Sentence case",
+
+    "userTemplate": "Rewrite this {tone} copy. Keep the SAME meaning, just improve the wording.\n\nInput: {inputText}\n\nOutput:"
+  },
+
+  "toneGuidance": {
+    "button": "Action button. Title Case. Start with verb. 2-3 words max.",
+    "tray title": "Section header. Title Case. 2-4 words. MUST relate to the input topic.",
+    "label": "Short benefit text for plans, badges, tags. Sentence case. 2-4 words. Lead with the benefit, not a verb. Use powerful words: Everything, Full, Unlimited, Complete. Avoid 'Includes X' — prefer 'X included' or 'Full X access'.",
+    "help text": "Instructional text. Sentence case.",
+    "error message": "Error message. Sentence case. Never blame user.",
+    "tooltip": "Brief explanation. Sentence case. No period.",
+    "description": "Descriptive text. Sentence case.",
+    "notification": "Alert message. Sentence case.",
+    "empty state": "Empty state message. Sentence case. Guide to action."
+  },
+
+  "generationSettings": {
+    "temperature": 0.5
+  }
+}
