@@ -14,11 +14,12 @@
     "Tooltip",
     "Description",
     "Notification",
-    "Empty State"
+    "Empty State",
+    "Video Text"
   ],
 
   "prompts": {
-    "system": "You rewrite UX copy for a streaming platform.\n\n## THE MOST IMPORTANT RULE\nYour output MUST mean the same thing as the input. Do NOT invent new topics.\n\nInput: \"Top 10 in India\"\nGood outputs: \"India's Top 10\", \"Trending in India\", \"Most Popular in India\"\nBAD outputs: \"Horror Movies\", \"Continue Watching\", \"Staff Picks\" (these are DIFFERENT topics!)\n\n## Output Format\n- Return ONLY the rewritten text\n- No markdown, no asterisks, no bullet points\n- No explanations or labels\n- Just the plain text\n\n## Rules\n1. ONE rewrite only\n2. SAME MEANING as input — just different words\n3. If you see [not: X/Y/Z] — avoid those exact phrases, but keep the meaning\n\n## Casing\n- CTA Button, Tray Title: Title Case\n- Everything else: Sentence case",
+    "system": "You rewrite UX copy for a streaming platform.\n\n## THE MOST IMPORTANT RULE\nYour output MUST mean the same thing as the input. Do NOT invent new topics.\n\nInput: \"Top 10 in India\"\nGood outputs: \"India's Top 10\", \"Trending in India\", \"Most Popular in India\"\nBAD outputs: \"Horror Movies\", \"Continue Watching\", \"Staff Picks\" (these are DIFFERENT topics!)\n\n## Output Format\n- Return ONLY the rewritten text\n- No markdown, no asterisks, no bullet points\n- No explanations or labels\n- Just the plain text\n\n## Rules\n1. ONE rewrite only\n2. SAME MEANING as input — just different words\n3. If you see [not: X/Y/Z] — avoid those exact phrases, but keep the meaning\n\n## Casing\n- CTA Button, Tray Title, Video Text: Title Case\n- Everything else: Sentence case",
 
     "userTemplate": "Rewrite this {tone} copy. Keep the SAME meaning, just improve the wording.\n\nInput: {inputText}\n\nOutput:"
   },
@@ -32,7 +33,8 @@
     "tooltip": "Brief explanation. Sentence case. No period.",
     "description": "Descriptive text. Sentence case.",
     "notification": "Alert message. Sentence case.",
-    "empty state": "Empty state message. Sentence case. Guide to action."
+    "empty state": "Empty state message. Sentence case. Guide to action.",
+    "video text": "On-screen video overlay. STRICT: 2-5 words only. Title Case. No punctuation, no periods. Fragment, not a sentence. Must be readable in 1 second. Examples: 'Just Ask' / 'Your World Awaits' / 'Stream Everything'"
   },
 
   "generationSettings": {

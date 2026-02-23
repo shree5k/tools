@@ -24,6 +24,7 @@
                 <option value="ollama" selected>Ollama (Local)</option>
                 <option value="openai">OpenAI</option>
                 <option value="claude">Claude</option>
+                <option value="gemini">Gemini</option>
             </select>
         </div>
 
@@ -86,6 +87,22 @@
             />
         </div>
 
+        <div id="provider-gemini" class="provider-group is-hidden">
+            <select id="gemini-model-select" class="model-select" aria-label="Select a Gemini model" tabindex="-1">
+                <option value="" disabled selected>Enter API key to load models</option>
+            </select>
+            <input
+                type="password"
+                id="gemini-api-key"
+                class="api-key-input api-key-input-wide"
+                placeholder="Google AI API key"
+                oninput="saveGeminiKey(this.value)"
+                autocomplete="off"
+                spellcheck="false"
+                tabindex="-1"
+            />
+        </div>
+
         <button class="generate-btn" onclick="generateAllCopy()" tabindex="-1">Start Writing</button>
         <div class="howto-wrapper">
             <button class="howto-btn" type="button" id="howto-btn" aria-expanded="false" aria-controls="howto-popover" tabindex="-1">How to?</button>
@@ -95,7 +112,7 @@
                     <div class="howto-title">How to use : Default</div>
                     <div class="howto-steps">
                         <ol>
-                            <li>Install Ollama from ollama.com. Run `ollama run llama3.2` in your terminal. (Or add your Claude/OpenAI API key)</li>
+                            <li>Install Ollama from ollama.com. Run `ollama run llama3.2` in your terminal. (Or add your Claude/OpenAI/Gemini API key)</li>
                             <li>Each column is a UI context. Button, Tray Title, Error Message, you name it</li>
                             <li>Drop your text into any cell</li>
                             <li>Press <strong>Tab Tab</strong> to generate 10 variations. <strong>Cmd/Ctrl+Enter</strong> for one</li>
@@ -109,7 +126,7 @@
                     <div class="howto-title">How to use : Tone of Voice</div>
                     <div class="howto-steps">
                         <ol>
-                            <li>Install Ollama from ollama.com. Run `ollama run llama3.2` in your terminal. (Or add your Claude/OpenAI API key)</li>
+                            <li>Install Ollama from ollama.com. Run `ollama run llama3.2` in your terminal. (Or add your Claude/OpenAI/Gemini API key)</li>
                             <li>Each column is a different tone (professional, friendly etc.)</li>
                             <li>Drop your text into any cell</li>
                             <li>Press <strong>Tab Tab</strong> to generate 10 variations. <strong>Cmd/Ctrl+Enter</strong> for one</li>

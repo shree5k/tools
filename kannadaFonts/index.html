@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>font2svg — local fonts → SVG</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+        
+        body {
+            font-family: 'Inter', system_ui, sans-serif;
+        }
+        
+        #preview {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .tail-container {
+            max-width: 1024px;
+        }
+        
+        .font-option {
+            font-size: 15px;
+        }
+    </style>
+</head>
+<body class="bg-zinc-950 text-zinc-200 min-h-screen">
+    <div class="tail-container mx-auto p-8">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-10">
+            <div>
+                <h1 class="text-4xl font-semibold tracking-tighter">font2svg</h1>
+                <p class="text-zinc-400 mt-1">type • pick local font • copy SVG</p>
+            </div>
+            <div class="text-xs text-zinc-500 text-right">
+                Mac + Chrome/Edge = full local font access<br>
+                Safari/Firefox = upload only
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <!-- Controls -->
+            <div class="lg:col-span-5 space-y-8">
+                <!-- Text input -->
+                <div>
+                    <label class="block text-sm font-medium text-zinc-400 mb-2">YOUR TEXT</label>
+                    <textarea id="text-input" rows="4"
+                        class="w-full bg-zinc-900 border border-zinc-800 focus:border-violet-500 rounded-2xl p-5 text-2xl resize-y min-h-[140px] font-medium outline-none"
+                        placeholder="Type or paste here...&#10;Multi-line works!"></textarea>
+                </div>
+
+                <!-- Font selector -->
+                <div>
+                    <div class="flex items-center gap-3 mb-3">
+                        <label class="block text-sm font-medium text-zinc-400">FONT</label>
+                        <button id="load-local-btn"
+                            class="text-xs bg-zinc-800 hover:bg-zinc-700 px-4 py-1.5 rounded-xl transition-colors flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 01-14 0 7 7 0 0114 0z" />
+                            </svg>
+                            SCAN LOCAL FONTS
+                        </button>
+                    </div>
+                    
+                    <select id="font-select"
+                        class="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-4 text-lg outline-none focus:border-violet-500 font-medium">
+                    </select>
+                </div>
+
+                <!-- Upload -->
+                <div>
+                    <label class="block text-sm font-medium text-zinc-400 mb-2">OR UPLOAD CUSTOM FONT</label>
+                    <label class="block border-2 border-dashed border-zinc-700 hover:border-violet-500 rounded-3xl p-8 text-center cursor-pointer transition-colors">
+                        <input type="file" id="font-upload" accept=".ttf,.otf,.woff,.woff2" class="hidden">
+                        <div class="text-violet-400 text-2xl mb-2">+</div>
+                        <div class="text-sm">Drop .ttf / .otf / .woff here<br><span class="text-zinc-500">or click to browse</span></div>
+                    </label>
+                </div>
+
+                <!-- Styling -->
+                <div class="grid grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-zinc-400 mb-2">SIZE</label>
+                        <div class="flex items-center gap-4 bg-zinc-900 border border-zinc-800 rounded-2xl p-4">
+                            <input type="range" id="size-slider" min="40" max="280" value="120"
+                                class="w-full accent-violet-500">
+                            <span id="size-value" class="tabular-nums w-12 text-right font-mono text-xl">120</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-zinc-400 mb-2">COLOR</label>
+                        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 flex items-center gap-4">
+                            <input type="color" id="color-picker" value="#ffffff" 
+                                class="w-12 h-12 bg-transparent border-0 p-0 rounded-xl overflow-hidden cursor-pointer">
+                            <span id="color-hex" class="font-mono text-xl">#ffffff</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Preview -->
+            <div class="lg:col-span-7">
+                <div class="mb-3 flex justify-between items-baseline">
+                    <label class="text-sm font-medium text-zinc-400">LIVE PREVIEW</label>
+                    <div onclick="copyAsSVG()" 
+                        class="cursor-pointer text-xs bg-violet-600 hover:bg-violet-500 px-5 py-2 rounded-2xl flex items-center gap-2 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.25" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9 9 0 011.125-.112" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.25" d="M15.75 7.5l-3-3m0 0l-3 3m3-3v9" />
+                        </svg>
+                        COPY SVG
+                    </div>
+                </div>
+                
+                <div id="preview-container" 
+                    class="bg-white rounded-3xl p-12 shadow-2xl min-h-[420px] flex items-center justify-center border border-zinc-800 relative overflow-hidden">
+                    <div id="preview" tabindex="0"
+                        class="text-center break-words max-w-full select-text cursor-default"
+                        style="font-size: 120px; line-height: 1.1; color: #ffffff; font-family: system-ui;">
+                        Type something above
+                    </div>
+                </div>
+
+                <div class="text-[10px] text-zinc-500 mt-4 text-center flex items-center justify-center gap-4">
+                    <div>← Right-click preview = copy SVG</div>
+                    <div class="w-px h-3 bg-zinc-700"></div>
+                    <div>Click preview + Cmd/Ctrl+C = copy SVG</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 bg-zinc-900 border border-zinc-700 text-white px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-3">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+        </svg>
+        <span id="toast-text" class="font-medium">SVG copied to clipboard</span>
+    </div>
+
+    <script>
+        // Tailwind script already loaded via CDN
+        function initTailwind() {
+            // No extra config needed
+        }
+
+        // Elements
+        const textInput = document.getElementById('text-input')
+        const fontSelect = document.getElementById('font-select')
+        const preview = document.getElementById('preview')
+        const sizeSlider = document.getElementById('size-slider')
+        const sizeValue = document.getElementById('size-value')
+        const colorPicker = document.getElementById('color-picker')
+        const colorHex = document.getElementById('color-hex')
+        const loadLocalBtn = document.getElementById('load-local-btn')
+        const uploadInput = document.getElementById('font-upload')
+
+        let currentFont = 'system-ui'
+        let customFontFaces = []
+
+        // Populate default fonts
+        function populateDefaults() {
+            const defaults = [
+                {name: 'system-ui', label: 'System UI (default)'},
+                {name: 'Arial', label: 'Arial'},
+                {name: 'Helvetica', label: 'Helvetica'},
+                {name: 'Georgia', label: 'Georgia'},
+                {name: 'Times New Roman', label: 'Times New Roman'},
+                {name: 'Courier New', label: 'Courier New'},
+                {name: 'SF Pro Text', label: 'SF Pro Text (macOS)'},
+                {name: 'Inter', label: 'Inter (Google)'}
+            ]
+            
+            fontSelect.innerHTML = `<option value="" disabled selected class="text-zinc-500">— Choose or load a font —</option>`
+            
+            const optgroup = document.createElement('optgroup')
+            optgroup.label = 'Web-safe + macOS defaults'
+            defaults.forEach(f => {
+                const opt = document.createElement('option')
+                opt.value = f.name
+                opt.textContent = f.label
+                opt.className = 'font-option'
+                optgroup.appendChild(opt)
+            })
+            fontSelect.appendChild(optgroup)
+        }
+
+        // Update preview
+        function updatePreview() {
+            const text = textInput.value.trim() || 'Type something above'
+            preview.textContent = text
+            preview.style.fontFamily = `"${currentFont}"`
+        }
+
+        // Apply selected font
+        function applySelectedFont() {
+            currentFont = fontSelect.value || 'system-ui'
+            updatePreview()
+        }
+
+        // Populate select with loaded fonts
+        function addFontToSelect(name, label, isCustom = false) {
+            // Avoid duplicates
+            if ([...fontSelect.options].some(opt => opt.value === name)) return
+            
+            const opt = document.createElement('option')
+            opt.value = name
+            opt.textContent = isCustom ? `${label} (uploaded)` : label
+            opt.className = 'font-option'
+            fontSelect.appendChild(opt)
+        }
+
+        // Load local fonts via Local Font Access API
+        async function loadLocalFonts() {
+            if (!('queryLocalFonts' in window)) {
+                alert("Local Font Access API not supported.\n\nUse Chrome or Edge on macOS for full access to your ~/Library/Fonts folder.")
+                return
+            }
+            
+            loadLocalBtn.innerHTML = `Scanning...`
+            loadLocalBtn.disabled = true
+            
+            try {
+                const fonts = await window.queryLocalFonts()
+                
+                // Add all local fonts
+                fonts.forEach(font => {
+                    const displayName = font.fullName || font.family
+                    addFontToSelect(displayName, displayName)
+                })
+                
+                // Auto-select first one if none selected
+                if (!fontSelect.value) {
+                    fontSelect.selectedIndex = 2 // skip the disabled one
+                    applySelectedFont()
+                }
+                
+                const toast = document.getElementById('toast')
+                document.getElementById('toast-text').textContent = `${fonts.length} local fonts loaded`
+                toast.classList.remove('hidden')
+                setTimeout(() => toast.classList.add('hidden'), 2200)
+                
+            } catch (err) {
+                if (err.name === 'NotAllowedError') {
+                    alert("Permission to access local fonts was denied.\n\nClick the lock icon in the address bar → Site settings → Local fonts → Allow")
+                } else {
+                    console.error(err)
+                    alert("Could not load local fonts.")
+                }
+            } finally {
+                loadLocalBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 01-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    SCAN LOCAL FONTS
+                `
+                loadLocalBtn.disabled = false
+            }
+        }
+
+        // Upload custom font
+        async function handleFontUpload(e) {
+            const file = e.target.files[0]
+            if (!file) return
+            
+            const fontName = file.name.replace(/\.[^/.]+$/, "")
+            
+            const url = URL.createObjectURL(file)
+            const fontFace = new FontFace(fontName, `url(${url})`)
+            
+            try {
+                await fontFace.load()
+                document.fonts.add(fontFace)
+                customFontFaces.push(fontFace)
+                
+                addFontToSelect(fontName, fontName, true)
+                
+                // Auto select the new font
+                fontSelect.value = fontName
+                applySelectedFont()
+                
+                // Show toast
+                const toast = document.getElementById('toast')
+                document.getElementById('toast-text').textContent = `Loaded ${fontName}`
+                toast.classList.remove('hidden')
+                setTimeout(() => toast.classList.add('hidden'), 1800)
+            } catch (err) {
+                alert("Failed to load font. Make sure it's a valid .ttf/.otf/.woff file.")
+                console.error(err)
+            }
+        }
+
+        // Generate SVG
+        function generateSVG() {
+            let text = textInput.value.trim()
+            if (!text) text = "font2svg"
+            
+            const lines = text.split('\n')
+            const fontFamily = currentFont
+            const fontSize = parseInt(sizeSlider.value)
+            const fillColor = colorPicker.value
+            
+            const svgWidth = 920
+            const lineHeight = fontSize * 1.15
+            const totalHeight = Math.max(340, lines.length * lineHeight + 120)
+            
+            let yStart = totalHeight / 2 - (lines.length - 1) * lineHeight / 2 + fontSize * 0.35
+            
+            let textEls = ''
+            lines.forEach((line, i) => {
+                const y = yStart + i * lineHeight
+                const escaped = line
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                textEls += `    <text x="50%" y="${y}" text-anchor="middle" dominant-baseline="middle" font-family="'${fontFamily}'" font-size="${fontSize}" fill="${fillColor}" font-weight="500">${escaped}</text>\n`
+            })
+            
+            return `<?xml version="1.0" encoding="UTF-8"?>
+<svg width="${svgWidth}" height="${totalHeight}" viewBox="0 0 ${svgWidth} ${totalHeight}" xmlns="http://www.w3.org/2000/svg" aria-labelledby="title">
+  <title id="title">Text in ${fontFamily}</title>
+  ${textEls}
+</svg>`
+        }
+
+        // Copy as SVG (best possible clipboard format)
+        async function copyAsSVG() {
+            const svgString = generateSVG()
+            
+            try {
+                // Modern way — supports image/svg+xml mime type (best for Figma, Illustrator, etc.)
+                const item = new ClipboardItem({
+                    'image/svg+xml': new Blob([svgString], { type: 'image/svg+xml' }),
+                    'text/plain': new Blob([svgString], { type: 'text/plain' })
+                })
+                await navigator.clipboard.write([item])
+                
+                // Show toast
+                const toast = document.getElementById('toast')
+                document.getElementById('toast-text').innerHTML = `✅ SVG copied!<br><span class="text-xs text-emerald-400">Ready to paste in Figma / Illustrator</span>`
+                toast.classList.remove('hidden')
+                setTimeout(() => toast.classList.add('hidden'), 2600)
+            } catch (err) {
+                // Fallback for older browsers
+                await navigator.clipboard.writeText(svgString)
+                const toast = document.getElementById('toast')
+                document.getElementById('toast-text').textContent = 'SVG copied (text fallback)'
+                toast.classList.remove('hidden')
+                setTimeout(() => toast.classList.add('hidden'), 2000)
+            }
+        }
+
+        // Event listeners
+        function setupListeners() {
+            // Text input
+            textInput.addEventListener('input', updatePreview)
+            
+            // Font select
+            fontSelect.addEventListener('change', applySelectedFont)
+            
+            // Size slider
+            sizeSlider.addEventListener('input', () => {
+                const val = sizeSlider.value
+                sizeValue.textContent = val
+                preview.style.fontSize = `${val}px`
+            })
+            
+            // Color picker
+            colorPicker.addEventListener('input', () => {
+                const c = colorPicker.value
+                colorHex.textContent = c
+                preview.style.color = c
+            })
+            
+            // Load local fonts button
+            loadLocalBtn.addEventListener('click', loadLocalFonts)
+            
+            // Upload
+            uploadInput.addEventListener('change', handleFontUpload)
+            
+            // Preview right-click
+            preview.addEventListener('contextmenu', (e) => {
+                e.preventDefault()
+                copyAsSVG()
+            })
+            
+            // Cmd/Ctrl + C when preview focused
+            preview.addEventListener('keydown', (e) => {
+                if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'c') {
+                    e.preventDefault()
+                    copyAsSVG()
+                }
+            })
+            
+            // Also listen to the actual 'copy' event (extra safety)
+            preview.addEventListener('copy', (e) => {
+                e.preventDefault()
+                copyAsSVG()
+            })
+            
+            // Keyboard hint
+            preview.addEventListener('focus', () => {
+                preview.style.outline = '2px solid rgb(139 92 246)'
+            })
+            preview.addEventListener('blur', () => {
+                preview.style.outline = 'none'
+            })
+        }
+
+        // Init everything
+        function init() {
+            initTailwind()
+            populateDefaults()
+            
+            // Set initial preview styles
+            preview.style.fontSize = '120px'
+            preview.style.lineHeight = '1.1'
+            preview.style.fontWeight = '500'
+            
+            // Initial text
+            textInput.value = "hello\nworld"
+            updatePreview()
+            
+            // Select first real font
+            setTimeout(() => {
+                if (fontSelect.options.length > 1) {
+                    fontSelect.selectedIndex = 1
+                    applySelectedFont()
+                }
+            }, 100)
+            
+            setupListeners()
+            
+            // Auto-focus text input
+            textInput.focus()
+        }
+
+        // Go!
+        window.onload = init
+    </script>
+</body>
+</html>

@@ -27,6 +27,10 @@
     localStorage.setItem('claude_api_key', (key || '').trim());
   }
 
+  function saveGeminiKey(key) {
+    localStorage.setItem('gemini_api_key', (key || '').trim());
+  }
+
   function getProvider() {
     return (localStorage.getItem('provider') || document.getElementById('provider-select')?.value || 'ollama').trim();
   }
@@ -45,6 +49,65 @@
 
   function getClaudeKey() {
     return (localStorage.getItem('claude_api_key') || document.getElementById('claude-api-key')?.value || '').trim();
+  }
+
+  function getGeminiKey() {
+    return (localStorage.getItem('gemini_api_key') || document.getElementById('gemini-api-key')?.value || '').trim();
+  }
+
+  function getGeminiModel() {
+    // Clear invalid cached model names from older versions
+    const cached = localStorage.getItem('gemini_model');
+    if (cached && cached.includes('-latest')) {
+      localStorage.removeItem('gemini_model');
+    }
+    return (localStorage.getItem('gemini_model') || document.getElementById('gemini-model-select')?.value || '').trim();
+  }
+
+  /**
+   * Fetch available Gemini models from the API and populate the dropdown.
+   * Only shows models that support generateContent.
+   */
+  async function fetchGeminiModels(apiKey) {
+    if (!apiKey) return;
+    const select = document.getElementById('gemini-model-select');
+    if (!select) return;
+
+    try {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+      const data = await res.json();
+      if (!res.ok || !data.models) return;
+
+      // Filter to models that support generateContent
+      const generateModels = data.models
+        .filter(m => m.supportedGenerationMethods?.includes('generateContent'))
+        .map(m => m.name.replace('models/', ''))
+        .sort();
+
+      if (generateModels.length === 0) return;
+
+      // Remember current selection
+      const current = select.value;
+
+      // Rebuild dropdown
+      select.innerHTML = '';
+      generateModels.forEach(name => {
+        const opt = document.createElement('option');
+        opt.value = name;
+        opt.textContent = name;
+        select.appendChild(opt);
+      });
+
+      // Restore selection if still available, otherwise pick first
+      if (generateModels.includes(current)) {
+        select.value = current;
+      } else {
+        select.value = generateModels[0];
+      }
+      localStorage.setItem('gemini_model', select.value);
+    } catch (e) {
+      console.warn('Failed to fetch Gemini models:', e);
+    }
   }
 
   function getOllamaModel() {
@@ -231,6 +294,45 @@
     return generated;
   }
 
+  async function generateWithGemini({ model, apiKey, tone, inputText }) {
+    const systemPrompt =
+      TabTab.config.appConfig?.prompts?.system ||
+      'You rewrite UX copy into the requested tone. Return only the rewritten text, nothing else.';
+    const userPrompt = TabTab.config.buildUserPrompt(tone, inputText);
+    
+    // Combine system + user prompt since v1 API handles system instructions differently
+    const combinedPrompt = `${systemPrompt}\n\n${userPrompt}`;
+
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{ text: combinedPrompt }]
+        }],
+        generationConfig: {
+          temperature: TabTab.config.appConfig?.generationSettings?.temperature ?? 0.85
+        }
+      })
+    });
+
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      const msg = data?.error?.message || `Request failed (${response.status})`;
+      throw new Error(msg);
+    }
+
+    let generated = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '';
+    if ((generated.startsWith('"') && generated.endsWith('"')) || (generated.startsWith("'") && generated.endsWith("'"))) {
+      generated = generated.slice(1, -1).trim();
+    }
+    generated = cleanupModelOutput(generated);
+    if (!generated) throw new Error('Empty response from Gemini');
+    return generated;
+  }
+
   async function generateCopy({ tone, inputText }) {
     const provider = getProvider();
     if (provider === 'ollama') {
@@ -249,6 +351,12 @@
       if (!apiKey) throw new Error('Please enter your Anthropic API key.');
       const model = getClaudeModel();
       return await generateWithClaude({ model, apiKey, tone, inputText });
+    }
+    if (provider === 'gemini') {
+      const apiKey = getGeminiKey();
+      if (!apiKey) throw new Error('Please enter your Google AI API key.');
+      const model = getGeminiModel();
+      return await generateWithGemini({ model, apiKey, tone, inputText });
     }
     throw new Error(`Unknown provider: ${provider}`);
   }
@@ -646,7 +754,10 @@
     saveOllamaModel,
     saveOpenAIKey,
     saveClaudeKey,
+    saveGeminiKey,
+    fetchGeminiModels,
     getOllamaModel,
+    getGeminiKey,
     getToneForCol,
     generateWithOllama,
     generateIntoBelowCell,

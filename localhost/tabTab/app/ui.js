@@ -115,13 +115,16 @@
     const ollamaGroup = document.getElementById('provider-ollama');
     const openaiGroup = document.getElementById('provider-openai');
     const claudeGroup = document.getElementById('provider-claude');
+    const geminiGroup = document.getElementById('provider-gemini');
 
-    if (!providerSelect || !ollamaGroup || !openaiGroup || !claudeGroup) return;
+    if (!providerSelect || !ollamaGroup || !openaiGroup || !claudeGroup || !geminiGroup) return;
 
     const openaiKey = document.getElementById('openai-api-key');
     const claudeKey = document.getElementById('claude-api-key');
+    const geminiKey = document.getElementById('gemini-api-key');
     const openaiModel = document.getElementById('openai-model-select');
     const claudeModel = document.getElementById('claude-model-select');
+    const geminiModel = document.getElementById('gemini-model-select');
 
     function setVisible(el, visible) {
       el.classList.toggle('is-hidden', !visible);
@@ -131,6 +134,7 @@
       setVisible(ollamaGroup, provider === 'ollama');
       setVisible(openaiGroup, provider === 'openai');
       setVisible(claudeGroup, provider === 'claude');
+      setVisible(geminiGroup, provider === 'gemini');
     }
 
     // Load persisted values
@@ -140,17 +144,39 @@
 
     if (openaiKey) openaiKey.value = localStorage.getItem('openai_api_key') || '';
     if (claudeKey) claudeKey.value = localStorage.getItem('claude_api_key') || '';
+    if (geminiKey) geminiKey.value = localStorage.getItem('gemini_api_key') || '';
     if (openaiModel) openaiModel.value = localStorage.getItem('openai_model') || openaiModel.value;
     if (claudeModel) claudeModel.value = localStorage.getItem('claude_model') || claudeModel.value;
+    if (geminiModel) geminiModel.value = localStorage.getItem('gemini_model') || geminiModel.value;
+
+    // Fetch Gemini models when provider is selected and key exists
+    function tryFetchGeminiModels() {
+      const key = (geminiKey?.value || localStorage.getItem('gemini_api_key') || '').trim();
+      if (key && key.length > 10) {
+        TabTab.generation.fetchGeminiModels(key);
+      }
+    }
 
     providerSelect.addEventListener('change', () => {
       const provider = providerSelect.value;
       localStorage.setItem('provider', provider);
       applyProvider(provider);
+      if (provider === 'gemini') tryFetchGeminiModels();
     });
+
+    // Debounce Gemini key input to fetch models after user stops typing
+    let geminiKeyTimer = null;
+    geminiKey?.addEventListener('input', () => {
+      clearTimeout(geminiKeyTimer);
+      geminiKeyTimer = setTimeout(tryFetchGeminiModels, 800);
+    });
+
+    // If Gemini is already selected and key exists, fetch models now
+    if (storedProvider === 'gemini') tryFetchGeminiModels();
 
     openaiModel?.addEventListener('change', () => localStorage.setItem('openai_model', openaiModel.value));
     claudeModel?.addEventListener('change', () => localStorage.setItem('claude_model', claudeModel.value));
+    geminiModel?.addEventListener('change', () => localStorage.setItem('gemini_model', geminiModel.value));
   }
 
   function setupLogoTap() {

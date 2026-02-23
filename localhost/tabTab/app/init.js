@@ -29,6 +29,7 @@
     window.saveOllamaModel = TabTab.generation.saveOllamaModel;
     window.saveOpenAIKey = TabTab.generation.saveOpenAIKey;
     window.saveClaudeKey = TabTab.generation.saveClaudeKey;
+    window.saveGeminiKey = TabTab.generation.saveGeminiKey;
   }
 
   // Kick off
