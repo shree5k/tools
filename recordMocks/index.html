@@ -30,6 +30,52 @@
             box-shadow: 0 10px 40px rgba(0,0,0,0.3);
         }
 
+        #bgImageContainer {
+            position: absolute;
+            z-index: 0;
+            cursor: move;
+            display: none;
+        }
+
+        #bgImage {
+            width: 100%;
+            height: 100%;
+            display: block;
+            user-select: none;
+            pointer-events: none;
+            object-fit: cover;
+        }
+
+        #bgImageContainer.selected {
+            outline: 2px solid #ff6600;
+            outline-offset: 0px;
+        }
+
+        #bgImageContainer.selected .bg-resize-handle {
+            opacity: 1;
+        }
+
+        #bgImageContainer.resizing {
+            cursor: auto;
+        }
+
+        .bg-resize-handle {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: #fff;
+            border: 2px solid #ff6600;
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 15;
+        }
+
+        .bg-resize-handle.nw { top: -6px; left: -6px; cursor: nw-resize; }
+        .bg-resize-handle.ne { top: -6px; right: -6px; cursor: ne-resize; }
+        .bg-resize-handle.sw { bottom: -6px; left: -6px; cursor: sw-resize; }
+        .bg-resize-handle.se { bottom: -6px; right: -6px; cursor: se-resize; }
+
         #shadowFrame {
             position: absolute;
             background-color: #000;
@@ -133,7 +179,7 @@
             align-items: center;
             justify-content: center;
             pointer-events: none;
-            z-index: 1;
+            z-index: 2;
         }
 
         #dropZone.drag-over {
@@ -195,9 +241,14 @@
             background: #333;
             color: white;
         }
+
+        #bgImageInput {
+            display: none;
+        }
     </style>
 </head>
 <body>
+    <input type="file" id="bgImageInput" accept="image/*">
     <div class="shortcut-hint">
         <span>Press R to restart video</span>
         <svg class="copy-icon" id="copyBtn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -216,6 +267,14 @@
     <div id="frame">
         <div class="snap-line horizontal" id="snapH"></div>
         <div class="snap-line vertical" id="snapV"></div>
+        
+        <div id="bgImageContainer">
+            <img id="bgImage" alt="Background">
+            <div class="bg-resize-handle nw"></div>
+            <div class="bg-resize-handle ne"></div>
+            <div class="bg-resize-handle sw"></div>
+            <div class="bg-resize-handle se"></div>
+        </div>
         
         <div id="dropZone">
             <p>Drop video file here</p>
@@ -245,15 +304,24 @@
         const copyBtn = document.getElementById('copyBtn');
         const presetSelect = document.getElementById('presetSelect');
         const shadowSelect = document.getElementById('shadowSelect');
+        const bgImageInput = document.getElementById('bgImageInput');
+        const bgImageContainer = document.getElementById('bgImageContainer');
+        const bgImage = document.getElementById('bgImage');
         const DEFAULT_PRESET_VALUE = 'default';
 
         let isDragging = false;
         let isResizing = false;
         let resizeHandle = null;
+        let isBgDragging = false;
+        let isBgResizing = false;
+        let bgResizeHandle = null;
         let startX = 0, startY = 0;
         let startLeft = 0, startTop = 0;
         let startWidth = 0, startHeight = 0;
+        let bgStartLeft = 0, bgStartTop = 0;
+        let bgStartWidth = 0, bgStartHeight = 0;
         let aspectRatio = 1;
+        let bgAspectRatio = 1;
         let videoLoaded = false;
         let frameSize = 0;
 
@@ -395,9 +463,15 @@
             startTop = parseFloat(mockupContainer.style.top);
         });
 
-        frame.addEventListener('mousedown', (e) => {
-            if (e.target === frame || e.target === dropZone || e.target.tagName === 'P') {
+        // Deselect when clicking outside the containers
+        document.addEventListener('mousedown', (e) => {
+            const clickedOnMockup = mockupContainer.contains(e.target);
+            const clickedOnBgImage = bgImageContainer.contains(e.target);
+            
+            // If clicking outside both containers, deselect them
+            if (!clickedOnMockup && !clickedOnBgImage) {
                 mockupContainer.classList.remove('selected');
+                bgImageContainer.classList.remove('selected');
             }
         });
 
@@ -406,6 +480,10 @@
                 handleResize(e);
             } else if (isDragging) {
                 handleDrag(e);
+            } else if (isBgResizing) {
+                handleBgResize(e);
+            } else if (isBgDragging) {
+                handleBgDrag(e);
             }
         });
 
@@ -505,6 +583,16 @@
                 isResizing = false;
                 resizeHandle = null;
                 mockupContainer.classList.remove('resizing');
+            }
+            if (isBgDragging) {
+                isBgDragging = false;
+                snapH.classList.remove('active');
+                snapV.classList.remove('active');
+            }
+            if (isBgResizing) {
+                isBgResizing = false;
+                bgResizeHandle = null;
+                bgImageContainer.classList.remove('resizing');
             }
         });
 
@@ -627,6 +715,163 @@
         });
 
         setShadowDepth(shadowSelect.value);
+
+        // Background image resize handles
+        const bgResizeHandles = document.querySelectorAll('.bg-resize-handle');
+        bgResizeHandles.forEach(handle => {
+            handle.addEventListener('mousedown', (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                
+                isBgResizing = true;
+                bgResizeHandle = handle;
+                bgImageContainer.classList.add('selected', 'resizing');
+                
+                startX = e.clientX;
+                startY = e.clientY;
+                bgStartLeft = parseFloat(bgImageContainer.style.left) || 0;
+                bgStartTop = parseFloat(bgImageContainer.style.top) || 0;
+                bgStartWidth = bgImageContainer.offsetWidth;
+                bgStartHeight = bgImageContainer.offsetHeight;
+            });
+        });
+
+        // Background image drag
+        bgImageContainer.addEventListener('mousedown', (e) => {
+            if (e.target.classList.contains('bg-resize-handle')) {
+                return;
+            }
+            
+            e.preventDefault();
+            isBgDragging = true;
+            bgImageContainer.classList.add('selected');
+            
+            startX = e.clientX;
+            startY = e.clientY;
+            bgStartLeft = parseFloat(bgImageContainer.style.left) || 0;
+            bgStartTop = parseFloat(bgImageContainer.style.top) || 0;
+        });
+
+        function handleBgDrag(e) {
+            const deltaX = e.clientX - startX;
+            const deltaY = e.clientY - startY;
+            
+            let newLeft = bgStartLeft + deltaX;
+            let newTop = bgStartTop + deltaY;
+
+            const containerWidth = bgImageContainer.offsetWidth;
+            const containerHeight = bgImageContainer.offsetHeight;
+            
+            const snapThreshold = 10;
+            const centerX = (frameSize - containerWidth) / 2;
+            const centerY = (frameSize - containerHeight) / 2;
+            const bgCenterX = newLeft + containerWidth / 2;
+            const bgCenterY = newTop + containerHeight / 2;
+
+            snapH.classList.remove('active');
+            snapV.classList.remove('active');
+
+            if (Math.abs(bgCenterX - frameSize / 2) < snapThreshold) {
+                newLeft = centerX;
+                snapV.style.left = '50%';
+                snapV.classList.add('active');
+            }
+
+            if (Math.abs(bgCenterY - frameSize / 2) < snapThreshold) {
+                newTop = centerY;
+                snapH.style.top = '50%';
+                snapH.classList.add('active');
+            }
+
+            // Allow the image to extend beyond frame bounds for positioning flexibility
+            bgImageContainer.style.left = newLeft + 'px';
+            bgImageContainer.style.top = newTop + 'px';
+        }
+
+        function handleBgResize(e) {
+            const deltaX = e.clientX - startX;
+            const deltaY = e.clientY - startY;
+
+            let newWidth, newHeight, newLeft, newTop;
+
+            if (bgResizeHandle.classList.contains('se')) {
+                newWidth = bgStartWidth + deltaX;
+                newHeight = newWidth / bgAspectRatio;
+                newLeft = bgStartLeft;
+                newTop = bgStartTop;
+            } else if (bgResizeHandle.classList.contains('sw')) {
+                newWidth = bgStartWidth - deltaX;
+                newHeight = newWidth / bgAspectRatio;
+                newLeft = bgStartLeft + (bgStartWidth - newWidth);
+                newTop = bgStartTop;
+            } else if (bgResizeHandle.classList.contains('ne')) {
+                newWidth = bgStartWidth + deltaX;
+                newHeight = newWidth / bgAspectRatio;
+                newLeft = bgStartLeft;
+                newTop = bgStartTop + (bgStartHeight - newHeight);
+            } else if (bgResizeHandle.classList.contains('nw')) {
+                newWidth = bgStartWidth - deltaX;
+                newHeight = newWidth / bgAspectRatio;
+                newLeft = bgStartLeft + (bgStartWidth - newWidth);
+                newTop = bgStartTop + (bgStartHeight - newHeight);
+            }
+
+            if (newWidth > 50 && newHeight > 50) {
+                bgImageContainer.style.width = newWidth + 'px';
+                bgImageContainer.style.height = newHeight + 'px';
+                bgImageContainer.style.left = newLeft + 'px';
+                bgImageContainer.style.top = newTop + 'px';
+            }
+        }
+
+        // Double-click background to upload image
+        frame.addEventListener('dblclick', (e) => {
+            // Only trigger if clicking directly on the frame background, not child elements
+            if (e.target === frame || e.target === dropZone || e.target.tagName === 'P') {
+                bgImageInput.click();
+            }
+        });
+
+        // Handle image file selection
+        bgImageInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file && file.type.startsWith('image/')) {
+                const url = URL.createObjectURL(file);
+                bgImage.src = url;
+                bgImageContainer.style.display = 'block';
+                
+                bgImage.onload = function() {
+                    bgAspectRatio = bgImage.naturalWidth / bgImage.naturalHeight;
+                    
+                    // Initialize background image to cover the frame
+                    let containerWidth, containerHeight;
+                    
+                    if (bgAspectRatio >= 1) {
+                        containerHeight = frameSize;
+                        containerWidth = frameSize * bgAspectRatio;
+                    } else {
+                        containerWidth = frameSize;
+                        containerHeight = frameSize / bgAspectRatio;
+                    }
+                    
+                    // Make it cover the frame (slightly larger to allow positioning)
+                    const scale = Math.max(frameSize / containerWidth, frameSize / containerHeight) * 1.2;
+                    containerWidth *= scale;
+                    containerHeight *= scale;
+                    
+                    const left = (frameSize - containerWidth) / 2;
+                    const top = (frameSize - containerHeight) / 2;
+                    
+                    bgImageContainer.style.width = containerWidth + 'px';
+                    bgImageContainer.style.height = containerHeight + 'px';
+                    bgImageContainer.style.left = left + 'px';
+                    bgImageContainer.style.top = top + 'px';
+                };
+                
+                // Clear input value to allow selecting the same file again
+                e.target.value = '';
+            }
+        });
     </script>
 </body>
 </html>
