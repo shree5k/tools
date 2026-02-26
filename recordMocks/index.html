@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Record Mocks</title>
+    <link rel="icon" type="image/png" href="logo.png">
     <style>
         * {
             margin: 0;
@@ -75,6 +76,10 @@
         .bg-resize-handle.ne { top: -6px; right: -6px; cursor: ne-resize; }
         .bg-resize-handle.sw { bottom: -6px; left: -6px; cursor: sw-resize; }
         .bg-resize-handle.se { bottom: -6px; right: -6px; cursor: se-resize; }
+        .bg-resize-handle.n { top: -6px; left: 50%; transform: translateX(-50%); cursor: n-resize; }
+        .bg-resize-handle.s { bottom: -6px; left: 50%; transform: translateX(-50%); cursor: s-resize; }
+        .bg-resize-handle.e { top: 50%; right: -6px; transform: translateY(-50%); cursor: e-resize; }
+        .bg-resize-handle.w { top: 50%; left: -6px; transform: translateY(-50%); cursor: w-resize; }
 
         #shadowFrame {
             position: absolute;
@@ -94,6 +99,13 @@
                         0 20px 26.163px 0 rgba(0, 0, 0, 0.07),
                         0 8.148px 13.119px 0 rgba(0, 0, 0, 0.05),
                         0 1.852px 6.336px 0 rgba(0, 0, 0, 0.03);
+        }
+
+        .shadow-dark {
+            box-shadow:
+                    0 28px 90px rgba(0, 0, 0, 0.55),
+                    0 10px 30px rgba(0, 0, 0, 0.45),
+                    0 2px 8px  rgba(0, 0, 0, 0.40);
         }
 
         #video {
@@ -261,6 +273,7 @@
         <select class="preset-dropdown" id="shadowSelect">
             <option value="shadow-light">Shadow: Light</option>
             <option value="shadow-medium">Shadow: Medium</option>
+            <option value="shadow-dark">Shadow: Dark</option>
         </select>
     </div>
 
@@ -274,6 +287,10 @@
             <div class="bg-resize-handle ne"></div>
             <div class="bg-resize-handle sw"></div>
             <div class="bg-resize-handle se"></div>
+            <div class="bg-resize-handle n"></div>
+            <div class="bg-resize-handle s"></div>
+            <div class="bg-resize-handle e"></div>
+            <div class="bg-resize-handle w"></div>
         </div>
         
         <div id="dropZone">
@@ -706,7 +723,7 @@
         });
 
         function setShadowDepth(shadowType) {
-            shadowFrame.classList.remove('shadow-light', 'shadow-medium');
+            shadowFrame.classList.remove('shadow-light', 'shadow-medium', 'shadow-dark');
             shadowFrame.classList.add(shadowType);
         }
 
@@ -814,6 +831,30 @@
                 newHeight = newWidth / bgAspectRatio;
                 newLeft = bgStartLeft + (bgStartWidth - newWidth);
                 newTop = bgStartTop + (bgStartHeight - newHeight);
+            } else if (bgResizeHandle.classList.contains('n')) {
+                // North: resize height, adjust width proportionally, move top
+                newHeight = bgStartHeight - deltaY;
+                newWidth = newHeight * bgAspectRatio;
+                newLeft = bgStartLeft + (bgStartWidth - newWidth) / 2;
+                newTop = bgStartTop + (bgStartHeight - newHeight);
+            } else if (bgResizeHandle.classList.contains('s')) {
+                // South: resize height, adjust width proportionally, keep top
+                newHeight = bgStartHeight + deltaY;
+                newWidth = newHeight * bgAspectRatio;
+                newLeft = bgStartLeft + (bgStartWidth - newWidth) / 2;
+                newTop = bgStartTop;
+            } else if (bgResizeHandle.classList.contains('e')) {
+                // East: resize width, adjust height proportionally, keep left
+                newWidth = bgStartWidth + deltaX;
+                newHeight = newWidth / bgAspectRatio;
+                newLeft = bgStartLeft;
+                newTop = bgStartTop + (bgStartHeight - newHeight) / 2;
+            } else if (bgResizeHandle.classList.contains('w')) {
+                // West: resize width, adjust height proportionally, move left
+                newWidth = bgStartWidth - deltaX;
+                newHeight = newWidth / bgAspectRatio;
+                newLeft = bgStartLeft + (bgStartWidth - newWidth);
+                newTop = bgStartTop + (bgStartHeight - newHeight) / 2;
             }
 
             if (newWidth > 50 && newHeight > 50) {
@@ -826,8 +867,12 @@
 
         // Double-click background to upload image
         frame.addEventListener('dblclick', (e) => {
-            // Only trigger if clicking directly on the frame background, not child elements
-            if (e.target === frame || e.target === dropZone || e.target.tagName === 'P') {
+            // Trigger if clicking on frame background, dropZone, or on the background image itself
+            if (e.target === frame || 
+                e.target === dropZone || 
+                e.target.tagName === 'P' ||
+                e.target === bgImage ||
+                e.target === bgImageContainer) {
                 bgImageInput.click();
             }
         });
