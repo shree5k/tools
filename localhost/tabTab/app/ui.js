@@ -149,30 +149,11 @@
     if (claudeModel) claudeModel.value = localStorage.getItem('claude_model') || claudeModel.value;
     if (geminiModel) geminiModel.value = localStorage.getItem('gemini_model') || geminiModel.value;
 
-    // Fetch Gemini models when provider is selected and key exists
-    function tryFetchGeminiModels() {
-      const key = (geminiKey?.value || localStorage.getItem('gemini_api_key') || '').trim();
-      if (key && key.length > 10) {
-        TabTab.generation.fetchGeminiModels(key);
-      }
-    }
-
     providerSelect.addEventListener('change', () => {
       const provider = providerSelect.value;
       localStorage.setItem('provider', provider);
       applyProvider(provider);
-      if (provider === 'gemini') tryFetchGeminiModels();
     });
-
-    // Debounce Gemini key input to fetch models after user stops typing
-    let geminiKeyTimer = null;
-    geminiKey?.addEventListener('input', () => {
-      clearTimeout(geminiKeyTimer);
-      geminiKeyTimer = setTimeout(tryFetchGeminiModels, 800);
-    });
-
-    // If Gemini is already selected and key exists, fetch models now
-    if (storedProvider === 'gemini') tryFetchGeminiModels();
 
     openaiModel?.addEventListener('change', () => localStorage.setItem('openai_model', openaiModel.value));
     claudeModel?.addEventListener('change', () => localStorage.setItem('claude_model', claudeModel.value));

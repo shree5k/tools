@@ -64,51 +64,7 @@
     return (localStorage.getItem('gemini_model') || document.getElementById('gemini-model-select')?.value || 'gemini-2.5-flash-lite').trim();
   }
 
-  /**
-   * Fetch available Gemini models from the API and populate the dropdown.
-   * Only shows models that support generateContent.
-   */
-  async function fetchGeminiModels(apiKey) {
-    if (!apiKey) return;
-    const select = document.getElementById('gemini-model-select');
-    if (!select) return;
 
-    try {
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
-      const data = await res.json();
-      if (!res.ok || !data.models) return;
-
-      // Filter to models that support generateContent
-      const generateModels = data.models
-        .filter(m => m.supportedGenerationMethods?.includes('generateContent'))
-        .map(m => m.name.replace('models/', ''))
-        .sort();
-
-      if (generateModels.length === 0) return;
-
-      // Remember current selection
-      const current = select.value;
-
-      // Rebuild dropdown
-      select.innerHTML = '';
-      generateModels.forEach(name => {
-        const opt = document.createElement('option');
-        opt.value = name;
-        opt.textContent = name;
-        select.appendChild(opt);
-      });
-
-      // Restore selection if still available, otherwise pick first
-      if (generateModels.includes(current)) {
-        select.value = current;
-      } else {
-        select.value = generateModels[0];
-      }
-      localStorage.setItem('gemini_model', select.value);
-    } catch (e) {
-      console.warn('Failed to fetch Gemini models:', e);
-    }
-  }
 
   function getOllamaModel() {
     return (localStorage.getItem('ollama_model') || document.getElementById('ollama-model')?.value || '').trim();
@@ -755,9 +711,7 @@
     saveOpenAIKey,
     saveClaudeKey,
     saveGeminiKey,
-    fetchGeminiModels,
     getOllamaModel,
-    getGeminiKey,
     getToneForCol,
     generateWithOllama,
     generateIntoBelowCell,
