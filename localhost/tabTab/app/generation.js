@@ -61,7 +61,7 @@
     if (cached && cached.includes('-latest')) {
       localStorage.removeItem('gemini_model');
     }
-    return (localStorage.getItem('gemini_model') || document.getElementById('gemini-model-select')?.value || '').trim();
+    return (localStorage.getItem('gemini_model') || document.getElementById('gemini-model-select')?.value || 'gemini-2.5-flash-lite').trim();
   }
 
   /**
